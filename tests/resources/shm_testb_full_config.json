@@ -9,22 +9,22 @@
       }
     },
     "external_dns_resolver": "168.63.129.16",
-    "fqdn": "DC1-SHM-TESTB.testb.dsgroupdev.co.uk",
-    "hostname": "DC1-SHM-TESTB",
-    "hostnameLower": "dc1-shm-testb",
-    "hostnameUpper": "DC1-SHM-TESTB",
+    "fqdn": "SHM-TESTB-DC1.testb.dsgroupdev.co.uk",
+    "hostname": "SHM-TESTB-DC1",
+    "hostnameLower": "shm-testb-dc1",
+    "hostnameUpper": "SHM-TESTB-DC1",
     "installationDirectory": "C:\\Installation",
     "ip": "10.0.0.4",
     "rg": "RG_SHM_TESTB_DC",
     "safemodePasswordSecretName": "shm-testb-vm-safemode-password-dc",
-    "vmName": "DC1-SHM-TESTB",
+    "vmName": "SHM-TESTB-DC1",
     "vmSize": "Standard_D2s_v3"
   },
   "dcb": {
-    "fqdn": "DC2-SHM-TESTB.testb.dsgroupdev.co.uk",
-    "hostname": "DC2-SHM-TESTB",
+    "fqdn": "SHM-TESTB-DC2.testb.dsgroupdev.co.uk",
+    "hostname": "SHM-TESTB-DC2",
     "ip": "10.0.0.5",
-    "vmName": "DC2-SHM-TESTB"
+    "vmName": "SHM-TESTB-DC2"
   },
   "diskTypeDefault": "Standard_LRS",
   "dns": {
@@ -624,9 +624,9 @@
             "type": "Standard_LRS"
           }
         },
-        "hostname": "LINUX-UPDATES-SHM-TESTB",
+        "hostname": "SHM-TESTB-LINUX-UPDATES",
         "ip": "10.0.3.4",
-        "vmName": "LINUX-UPDATES-SHM-TESTB",
+        "vmName": "SHM-TESTB-LINUX-UPDATES",
         "vmSize": "Standard_B2ms"
       }
     }
@@ -762,11 +762,11 @@
         "type": "Standard_LRS"
       }
     },
-    "hostname": "NPS-SHM-TESTB",
+    "hostname": "SHM-TESTB-NPS",
     "installationDirectory": "C:\\Installation",
     "ip": "10.0.0.6",
     "rg": "RG_SHM_TESTB_NPS",
-    "vmName": "NPS-SHM-TESTB",
+    "vmName": "SHM-TESTB-NPS",
     "vmSize": "Standard_D2s_v3"
   },
   "nsgPrefix": "NSG_SHM_TESTB",

@@ -308,7 +308,7 @@ function Get-ShmConfig {
     # -----------------
     # All Microsoft public IP addresses from https://www.microsoft.com/en-us/download/confirmation.aspx?id=53602
     $microsoftIpAddresses = @("4.128.0.0/12", "4.144.0.0/12", "4.160.0.0/12", "4.176.0.0/12", "4.192.0.0/12", "4.208.0.0/12", "4.224.0.0/12", "4.240.0.0/12", "13.64.0.0/11", "13.96.0.0/13", "13.104.0.0/14", "20.0.0.0/11", "20.33.0.0/16", "20.34.0.0/15", "20.36.0.0/14", "20.40.0.0/13", "20.48.0.0/12", "20.64.0.0/10", "20.128.0.0/16", "20.130.0.0/16", "20.135.0.0/16", "20.136.0.0/16", "20.140.0.0/15", "20.143.0.0/16", "20.144.0.0/14", "20.150.0.0/15", "20.152.0.0/16", "20.153.0.0/16", "20.157.0.0/16", "20.158.0.0/15", "20.160.0.0/12", "20.176.0.0/14", "20.180.0.0/14", "20.184.0.0/13", "20.192.0.0/10", "23.96.0.0/13", "40.64.0.0/10", "40.162.0.0/16", "42.159.0.0/16", "51.4.0.0/15", "51.8.0.0/16", "51.10.0.0/15", "51.12.0.0/15", "51.18.0.0/16", "51.51.0.0/16", "51.53.0.0/16", "51.103.0.0/16", "51.104.0.0/15", "51.107.0.0/16", "51.116.0.0/16", "51.120.0.0/16", "51.124.0.0/16", "51.132.0.0/16", "51.136.0.0/15", "51.138.0.0/16", "51.140.0.0/14", "51.144.0.0/15", "52.96.0.0/12", "52.112.0.0/14", "52.120.0.0/14", "52.125.0.0/16", "52.126.0.0/15", "52.130.0.0/15", "52.132.0.0/14", "52.136.0.0/13", "52.145.0.0/16", "52.146.0.0/15", "52.148.0.0/14", "52.152.0.0/13", "52.160.0.0/11", "52.224.0.0/11", "64.4.0.0/18", "65.52.0.0/14", "66.119.144.0/20", "68.18.0.0/15", "68.154.0.0/15", "68.210.0.0/15", "68.218.0.0/15", "68.220.0.0/15", "70.37.0.0/17", "70.37.128.0/18", "70.152.0.0/15", "70.156.0.0/15", "72.144.0.0/14", "72.152.0.0/14", "74.160.0.0/14", "74.176.0.0/14", "74.224.0.0/14", "74.234.0.0/15", "74.240.0.0/14", "74.248.0.0/15", "91.190.216.0/21", "94.245.64.0/18", "98.64.0.0/14", "98.70.0.0/15", "102.37.0.0/16", "102.133.0.0/16", "103.9.8.0/22", "103.25.156.0/24", "103.25.157.0/24", "103.25.158.0/23", "103.36.96.0/22", "103.255.140.0/22", "104.40.0.0/13", "104.146.0.0/15", "104.208.0.0/13", "108.140.0.0/14", "111.221.16.0/20", "111.221.64.0/18", "128.94.0.0/16", "129.75.0.0/16", "131.107.0.0/16", "131.253.1.0/24", "131.253.3.0/24", "131.253.5.0/24", "131.253.6.0/24", "131.253.8.0/24", "131.253.12.0/22", "131.253.16.0/23", "131.253.18.0/24", "131.253.21.0/24", "131.253.22.0/23", "131.253.24.0/21", "131.253.32.0/20", "131.253.61.0/24", "131.253.62.0/23", "131.253.64.0/18", "131.253.128.0/17", "132.164.0.0/16", "132.245.0.0/16", "134.170.0.0/16", "134.177.0.0/16", "135.130.0.0/16", "135.149.0.0/16", "137.116.0.0/15", "137.135.0.0/16", "138.91.0.0/16", "138.105.0.0/16", "138.196.0.0/16", "138.239.0.0/16", "139.217.0.0/16", "139.219.0.0/16", "141.251.0.0/16", "143.64.0.0/16", "146.147.0.0/16", "147.145.0.0/16", "147.243.0.0/16", "148.7.0.0/16", "150.171.0.0/16", "150.242.48.0/22", "155.62.0.0/16", "157.31.0.0/16", "157.54.0.0/15", "157.56.0.0/14", "157.60.0.0/16", "158.23.0.0/16", "158.158.0.0/16", "159.27.0.0/16", "159.128.0.0/16", "163.228.0.0/16", "167.105.0.0/16", "167.220.0.0/16", "168.61.0.0/16", "168.62.0.0/15", "169.138.0.0/16", "170.165.0.0/16", "172.160.0.0/11", "172.200.0.0/13", "172.208.0.0/13", "191.232.0.0/13", "192.32.0.0/16", "192.48.225.0/24", "192.84.159.0/24", "192.84.160.0/23", "192.197.157.0/24", "192.237.67.0/24", "193.149.64.0/19", "193.221.113.0/24", "194.69.96.0/19", "194.110.197.0/24", "195.134.224.0/19", "198.105.232.0/22", "198.137.97.0/24", "198.180.95.0/24", "198.180.96.0/23", "198.200.130.0/24", "198.206.164.0/24", "199.30.16.0/20", "199.60.28.0/24", "199.74.210.0/24", "199.103.90.0/23", "199.103.122.0/24", "199.242.32.0/20", "199.242.48.0/21", "202.89.224.0/20", "204.13.120.0/21", "204.14.180.0/22", "204.79.135.0/24", "204.79.179.0/24", "204.79.181.0/24", "204.79.188.0/24", "204.79.195.0/24", "204.79.196.0/23", "204.79.252.0/24", "204.152.18.0/23", "204.152.140.0/23", "204.231.192.0/24", "204.231.194.0/23", "204.231.197.0/24", "204.231.198.0/23", "204.231.200.0/21", "204.231.208.0/20", "204.231.236.0/24", "205.174.224.0/20", "206.138.168.0/21", "206.191.224.0/19", "207.46.0.0/16", "207.68.128.0/18", "208.68.136.0/21", "208.76.44.0/22", "208.84.0.0/21", "209.240.192.0/19", "213.199.128.0/18", "216.32.180.0/22", "216.220.208.0/20")
-    $linuxUpdateServerHostname = "LINUX-UPDATES-SHM-$($shm.id)".ToUpper()
+    $linuxUpdateServerHostname = "SHM-$($shm.id)-LINUX-UPDATES".ToUpper()
     $shm.monitoring = [ordered]@{
         rg                = "$($shm.rgPrefix)_MONITORING".ToUpper()
         automationAccount = [ordered]@{
@@ -424,10 +424,11 @@ function Get-ShmConfig {
 
     # Domain controller config
     # ------------------------
-    $hostname = "DC1-SHM-$($shm.id)".ToUpper() | Limit-StringLength -MaximumLength 15
+    $vmName = "SHM-$($shm.id)-DC1".ToUpper()
+    $hostname = $vmName | Limit-StringLength -MaximumLength 15
     $shm.dc = [ordered]@{
         rg                         = "$($shm.rgPrefix)_DC".ToUpper()
-        vmName                     = $hostname
+        vmName                     = $vmName
         vmSize                     = "Standard_D2s_v3"
         hostname                   = $hostname
         hostnameLower              = $hostname.ToLower()
@@ -448,9 +449,10 @@ function Get-ShmConfig {
 
     # Backup domain controller config
     # -------------------------------
-    $hostname = "DC2-SHM-$($shm.id)".ToUpper() | Limit-StringLength -MaximumLength 15
+    $vmName = "SHM-$($shm.id)-DC2".ToUpper()
+    $hostname = $vmName | Limit-StringLength -MaximumLength 15
     $shm.dcb = [ordered]@{
-        vmName   = $hostname
+        vmName   = $vmName
         hostname = $hostname
         fqdn     = "${hostname}.$($shm.domain.fqdn)"
         ip       = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 5
@@ -458,11 +460,12 @@ function Get-ShmConfig {
 
     # NPS config
     # ----------
-    $hostname = "NPS-SHM-$($shm.id)".ToUpper() | Limit-StringLength -MaximumLength 15
+    $vmName = "SHM-$($shm.id)-NPS".ToUpper()
+    $hostname = $vmName | Limit-StringLength -MaximumLength 15
     $shm.nps = [ordered]@{
         adminPasswordSecretName = "shm-$($shm.id)-vm-admin-password-nps".ToLower()
         rg                      = "$($shm.rgPrefix)_NPS".ToUpper()
-        vmName                  = $hostname
+        vmName                  = $vmName
         vmSize                  = "Standard_D2s_v3"
         hostname                = $hostname
         ip                      = Get-NextAvailableIpInRange -IpRangeCidr $shm.network.vnet.subnets.identity.cidr -Offset 6
@@ -876,7 +879,7 @@ function Get-SreConfig {
         $config.sre.remoteDesktop.guacamole = [ordered]@{
             adminPasswordSecretName         = "$($config.sre.shortName)-vm-admin-password-guacamole"
             databaseAdminPasswordSecretName = "$($config.sre.shortName)-db-admin-password-guacamole"
-            vmName                          = "GUACAMOLE-SRE-$($config.sre.id)".ToUpper()
+            vmName                          = "SRE-$($config.sre.id)-GUACAMOLE".ToUpper()
             vmSize                          = "Standard_DS2_v2"
             ip                              = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.remoteDesktop.cidr -Offset 4
             disks                           = [ordered]@{
@@ -889,7 +892,8 @@ function Get-SreConfig {
     } elseif ($config.sre.remoteDesktop.provider -eq "MicrosoftRDS") {
         $config.sre.remoteDesktop.gateway = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-gateway"
-            vmName                  = "RDG-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
+            hostname                = "SRE-$($config.sre.id | Limit-StringLength -MaximumLength 7)-RDG".ToUpper() # maximum 15 characters
+            vmName                  = "SRE-$($config.sre.id)-RDS-GATEWAY".ToUpper()
             vmSize                  = "Standard_DS2_v2"
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.remoteDesktop.cidr -Offset 4
             installationDirectory   = "C:\Installation"
@@ -910,7 +914,8 @@ function Get-SreConfig {
         }
         $config.sre.remoteDesktop.appSessionHost = [ordered]@{
             adminPasswordSecretName = "$($config.sre.shortName)-vm-admin-password-rds-sh1"
-            vmName                  = "APP-SRE-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
+            hostname                = "SRE-$($config.sre.id | Limit-StringLength -MaximumLength 7)-APP".ToUpper() # maximum 15 characters
+            vmName                  = "SRE-$($config.sre.id)-RDS-APPLICATIONS".ToUpper()
             vmSize                  = "Standard_DS2_v2"
             ip                      = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.remoteDesktop.cidr -Offset 5
             nsg                     = [ordered]@{
@@ -929,9 +934,9 @@ function Get-SreConfig {
     }
     # Construct the hostname and FQDN for each VM
     foreach ($server in $config.sre.remoteDesktop.Keys) {
-        if (-not $config.sre.remoteDesktop[$server].vmName) { continue }
-        $config.sre.remoteDesktop[$server].hostname = $config.sre.remoteDesktop[$server].vmName
-        $config.sre.remoteDesktop[$server].fqdn = "$($config.sre.remoteDesktop[$server].vmName).$($config.shm.domain.fqdn)"
+        if ($config.sre.remoteDesktop[$server].hostname) {
+            $config.sre.remoteDesktop[$server].fqdn = "$($config.sre.remoteDesktop[$server].hostname).$($config.shm.domain.fqdn)".ToLower()
+        }
     }
 
     # Set the appropriate tier-dependent network rules for the remote desktop server
@@ -1045,8 +1050,8 @@ function Get-SreConfig {
     # Construct the hostname and FQDN for each VM
     foreach ($server in $config.sre.webapps.Keys) {
         if ($config.sre.webapps[$server] -IsNot [System.Collections.Specialized.OrderedDictionary]) { continue }
-        $config.sre.webapps[$server].fqdn = "$($config.sre.webapps[$server].hostname).$($config.sre.domain.fqdn)"
-        $config.sre.webapps[$server].vmName = "$($config.sre.webapps[$server].hostname)-SRE-$($config.sre.id)".ToUpper()
+        $config.sre.webapps[$server].vmName = "SRE-$($config.sre.id)-$($config.sre.webapps[$server].hostname)".ToUpper()
+        $config.sre.webapps[$server].fqdn = "$($config.sre.webapps[$server].hostname).$($config.sre.domain.fqdn)".ToLower()
     }
 
 
@@ -1066,15 +1071,8 @@ function Get-SreConfig {
         }
         $config.sre.databases["db$($databaseType.ToLower())"] = [ordered]@{
             adminPasswordSecretName   = "$($config.sre.shortName)-vm-admin-password-$($databaseType.ToLower())"
-            dbAdminUsernameSecretName = "$($config.sre.shortName)-db-admin-username-$($databaseType.ToLower())"
             dbAdminPasswordSecretName = "$($config.sre.shortName)-db-admin-password-$($databaseType.ToLower())"
-            vmName                    = "$($dbConfig[$databaseType].prefix)-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
-            type                      = $databaseType
-            ip                        = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.databases.cidr -Offset $ipOffset
-            port                      = $dbConfig[$databaseType].port
-            sku                       = $dbConfig[$databaseType].sku
-            subnet                    = "databases"
-            vmSize                    = "Standard_DS2_v2"
+            dbAdminUsernameSecretName = "$($config.sre.shortName)-db-admin-username-$($databaseType.ToLower())"
             disks                     = [ordered]@{
                 data = [ordered]@{
                     sizeGb = "1024"
@@ -1085,6 +1083,14 @@ function Get-SreConfig {
                     type   = $config.sre.diskTypeDefault
                 }
             }
+            hostname                  = "$($dbConfig[$databaseType].prefix)-$($config.sre.id)".ToUpper() | Limit-StringLength -MaximumLength 15
+            ip                        = Get-NextAvailableIpInRange -IpRangeCidr $config.sre.network.vnet.subnets.databases.cidr -Offset $ipOffset
+            port                      = $dbConfig[$databaseType].port
+            sku                       = $dbConfig[$databaseType].sku
+            subnet                    = "databases"
+            type                      = $databaseType
+            vmName                    = "SRE-$($config.sre.id)-${databaseType}".ToUpper()
+            vmSize                    = "Standard_DS2_v2"
         }
         if ($databaseType -eq "MSSQL") { $config.sre.databases["db$($databaseType.ToLower())"]["enableSSIS"] = $true }
         $ipOffset += 1

@@ -10,22 +10,22 @@
         }
       },
       "external_dns_resolver": "168.63.129.16",
-      "fqdn": "DC1-SHM-TESTB.testb.dsgroupdev.co.uk",
-      "hostname": "DC1-SHM-TESTB",
-      "hostnameLower": "dc1-shm-testb",
-      "hostnameUpper": "DC1-SHM-TESTB",
+      "fqdn": "SHM-TESTB-DC1.testb.dsgroupdev.co.uk",
+      "hostname": "SHM-TESTB-DC1",
+      "hostnameLower": "shm-testb-dc1",
+      "hostnameUpper": "SHM-TESTB-DC1",
       "installationDirectory": "C:\\Installation",
       "ip": "10.0.0.4",
       "rg": "RG_SHM_TESTB_DC",
       "safemodePasswordSecretName": "shm-testb-vm-safemode-password-dc",
-      "vmName": "DC1-SHM-TESTB",
+      "vmName": "SHM-TESTB-DC1",
       "vmSize": "Standard_D2s_v3"
     },
     "dcb": {
-      "fqdn": "DC2-SHM-TESTB.testb.dsgroupdev.co.uk",
-      "hostname": "DC2-SHM-TESTB",
+      "fqdn": "SHM-TESTB-DC2.testb.dsgroupdev.co.uk",
+      "hostname": "SHM-TESTB-DC2",
       "ip": "10.0.0.5",
-      "vmName": "DC2-SHM-TESTB"
+      "vmName": "SHM-TESTB-DC2"
     },
     "diskTypeDefault": "Standard_LRS",
     "dns": {
@@ -625,9 +625,9 @@
               "type": "Standard_LRS"
             }
           },
-          "hostname": "LINUX-UPDATES-SHM-TESTB",
+          "hostname": "SHM-TESTB-LINUX-UPDATES",
           "ip": "10.0.3.4",
-          "vmName": "LINUX-UPDATES-SHM-TESTB",
+          "vmName": "SHM-TESTB-LINUX-UPDATES",
           "vmSize": "Standard_B2ms"
         }
       }
@@ -763,11 +763,11 @@
           "type": "Standard_LRS"
         }
       },
-      "hostname": "NPS-SHM-TESTB",
+      "hostname": "SHM-TESTB-NPS",
       "installationDirectory": "C:\\Installation",
       "ip": "10.0.0.6",
       "rg": "RG_SHM_TESTB_NPS",
-      "vmName": "NPS-SHM-TESTB",
+      "vmName": "SHM-TESTB-NPS",
       "vmSize": "Standard_D2s_v3"
     },
     "nsgPrefix": "NSG_SHM_TESTB",
@@ -972,12 +972,13 @@
           }
         },
         "enableSSIS": true,
+        "hostname": "MSSQL-T2GUAC",
         "ip": "10.152.3.4",
         "port": "1433",
         "sku": "sqldev-gen2",
         "subnet": "databases",
         "type": "MSSQL",
-        "vmName": "MSSQL-T2GUAC",
+        "vmName": "SRE-T2GUAC-MSSQL",
         "vmSize": "Standard_DS2_v2"
       },
       "dbpostgresql": {
@@ -994,12 +995,13 @@
             "type": "Standard_LRS"
           }
         },
+        "hostname": "PSTGRS-T2GUAC",
         "ip": "10.152.3.5",
         "port": "5432",
         "sku": "Ubuntu-latest",
         "subnet": "databases",
         "type": "PostgreSQL",
-        "vmName": "PSTGRS-T2GUAC",
+        "vmName": "SRE-T2GUAC-POSTGRESQL",
         "vmSize": "Standard_DS2_v2"
       },
       "rg": "RG_SHM_TESTB_SRE_T2GUAC_DATABASES"
@@ -1102,10 +1104,8 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "GUACAMOLE-SRE-T2GUAC.testb.dsgroupdev.co.uk",
-        "hostname": "GUACAMOLE-SRE-T2GUAC",
         "ip": "10.152.1.4",
-        "vmName": "GUACAMOLE-SRE-T2GUAC",
+        "vmName": "SRE-T2GUAC-GUACAMOLE",
         "vmSize": "Standard_DS2_v2"
       },
       "networkRules": {
@@ -1265,11 +1265,11 @@
           }
         },
         "dockerVersion": "latest",
-        "fqdn": "COCALC.t2guac.testb.dsgroupdev.co.uk",
+        "fqdn": "cocalc.t2guac.testb.dsgroupdev.co.uk",
         "hostname": "COCALC",
         "ip": "10.152.5.7",
         "osVersion": "Ubuntu-latest",
-        "vmName": "COCALC-SRE-T2GUAC",
+        "vmName": "SRE-T2GUAC-COCALC",
         "vmSize": "Standard_D2s_v3"
       },
       "codimd": {
@@ -1287,7 +1287,7 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "CODIMD.t2guac.testb.dsgroupdev.co.uk",
+        "fqdn": "codimd.t2guac.testb.dsgroupdev.co.uk",
         "hostname": "CODIMD",
         "ip": "10.152.5.6",
         "osVersion": "Ubuntu-latest",
@@ -1295,7 +1295,7 @@
           "dockerVersion": "13.4-alpine",
           "passwordSecretName": "sre-t2guac-other-codimd-password-postgresdb"
         },
-        "vmName": "CODIMD-SRE-T2GUAC",
+        "vmName": "SRE-T2GUAC-CODIMD",
         "vmSize": "Standard_D2s_v3"
       },
       "gitlab": {
@@ -1310,12 +1310,12 @@
             "type": "Standard_LRS"
           }
         },
-        "fqdn": "GITLAB.t2guac.testb.dsgroupdev.co.uk",
+        "fqdn": "gitlab.t2guac.testb.dsgroupdev.co.uk",
         "hostname": "GITLAB",
         "ip": "10.152.5.5",
         "osVersion": "Ubuntu-latest",
         "rootPasswordSecretName": "sre-t2guac-other-gitlab-root-password",
-        "vmName": "GITLAB-SRE-T2GUAC",
+        "vmName": "SRE-T2GUAC-GITLAB",
         "vmSize": "Standard_D2s_v3"
       },
       "rg": "RG_SHM_TESTB_SRE_T2GUAC_WEBAPPS"

@@ -9,22 +9,22 @@
       }
     },
     "external_dns_resolver": "168.63.129.16",
-    "fqdn": "DC1-SHM-TESTA.testa.dsgroupdev.co.uk",
-    "hostname": "DC1-SHM-TESTA",
-    "hostnameLower": "dc1-shm-testa",
-    "hostnameUpper": "DC1-SHM-TESTA",
+    "fqdn": "SHM-TESTA-DC1.testa.dsgroupdev.co.uk",
+    "hostname": "SHM-TESTA-DC1",
+    "hostnameLower": "shm-testa-dc1",
+    "hostnameUpper": "SHM-TESTA-DC1",
     "installationDirectory": "C:\\Installation",
     "ip": "10.0.0.4",
     "rg": "RG_SHM_TESTA_DC",
     "safemodePasswordSecretName": "shm-testa-vm-safemode-password-dc",
-    "vmName": "DC1-SHM-TESTA",
+    "vmName": "SHM-TESTA-DC1",
     "vmSize": "Standard_D2s_v3"
   },
   "dcb": {
-    "fqdn": "DC2-SHM-TESTA.testa.dsgroupdev.co.uk",
-    "hostname": "DC2-SHM-TESTA",
+    "fqdn": "SHM-TESTA-DC2.testa.dsgroupdev.co.uk",
+    "hostname": "SHM-TESTA-DC2",
     "ip": "10.0.0.5",
-    "vmName": "DC2-SHM-TESTA"
+    "vmName": "SHM-TESTA-DC2"
   },
   "diskTypeDefault": "Standard_LRS",
   "dns": {
@@ -624,9 +624,9 @@
             "type": "Standard_LRS"
           }
         },
-        "hostname": "LINUX-UPDATES-SHM-TESTA",
+        "hostname": "SHM-TESTA-LINUX-UPDATES",
         "ip": "10.0.3.4",
-        "vmName": "LINUX-UPDATES-SHM-TESTA",
+        "vmName": "SHM-TESTA-LINUX-UPDATES",
         "vmSize": "Standard_B2ms"
       }
     }
@@ -762,11 +762,11 @@
         "type": "Standard_LRS"
       }
     },
-    "hostname": "NPS-SHM-TESTA",
+    "hostname": "SHM-TESTA-NPS",
     "installationDirectory": "C:\\Installation",
     "ip": "10.0.0.6",
     "rg": "RG_SHM_TESTA_NPS",
-    "vmName": "NPS-SHM-TESTA",
+    "vmName": "SHM-TESTA-NPS",
     "vmSize": "Standard_D2s_v3"
   },
   "nsgPrefix": "NSG_SHM_TESTA",
