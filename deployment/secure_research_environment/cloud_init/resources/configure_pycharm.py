@@ -16,8 +16,8 @@ def generate_xml_output(target):
         python_environment = f"py{python_short_version.replace('.', '')}"
         jdk_output += [
             line.replace("||python_version||", python_version)
-                .replace("||python_short_version||", python_short_version)
-                .replace("||python_environment||", python_environment)
+            .replace("||python_short_version||", python_short_version)
+            .replace("||python_environment||", python_environment)
             for line in jdk_template_lines
             if line
         ]

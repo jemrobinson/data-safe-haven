@@ -7,3 +7,7 @@ repos:
       - id: check-merge-conflict
       - id: check-xml
       - id: trailing-whitespace
+  - repo: https://github.com/psf/black
+    rev: 22.8.0
+    hooks:
+      - id: black

@@ -10,15 +10,15 @@ versions = {
     pkg.split(" ")[0]: pkg.split(" ")[-1]  # get package name and version
     for pkg in subprocess.run(
         ["pip", "list"], stdout=subprocess.PIPE
-    )                                      # ... from pip list
-    .stdout.decode()                       # ... stdout converted to string
-    .split("\n")[1:]                       # ... splitting into lines and discard the header
+    )  # ... from pip list
+    .stdout.decode()  # ... stdout converted to string
+    .split("\n")[1:]  # ... splitting into lines and discard the header
 }
 
 # Some packages cannot be imported so we skip them.
 KNOWN_RESOURCE_ISSUES = [
     "backports",  # does not define a package
-    "xgboost",    # has dependencies on an external library
+    "xgboost",  # has dependencies on an external library
 ]
 
 # For these packages we check for an executable as they are not importable

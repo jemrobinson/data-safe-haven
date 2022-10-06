@@ -49,16 +49,17 @@ repo_name = repo.remotes.origin.url.split(".git")[0].split("/")[-1]
 
 # Load all release since earliest_supported_release
 releases = sorted((t.name for t in repo.tags), reverse=True)
-supported_versions = (
-    releases[: releases.index(earliest_supported_release) + 1]
-    + [development_branch]
-)
+supported_versions = releases[: releases.index(earliest_supported_release) + 1] + [
+    development_branch
+]
 default_version = supported_versions[0]  # Latest stable release
 current_version = (
     [tag.name for tag in repo.tags if tag.commit == repo.head.commit]
     + [branch.name for branch in repo.branches if branch.commit == repo.head.commit]
     + [repo.head.commit]
-)[0]  # Tag or branch name or commit ID if no name is available
+)[
+    0
+]  # Tag or branch name or commit ID if no name is available
 
 # --- Ensure local repo is clean --
 if repo.is_dirty(untracked_files=True):
@@ -86,7 +87,9 @@ open(combined_output_dir / ".nojekyll", "w+").close()
 
 # Build docs for each branch
 for version in supported_versions:
-    print(f"{emoji.emojize(':hourglass:', language='alias')} Generating docs for version '{version}'...")
+    print(
+        f"{emoji.emojize(':hourglass:', language='alias')} Generating docs for version '{version}'..."
+    )
 
     try:
         # Checkout repo at this version
@@ -140,7 +143,9 @@ for version in supported_versions:
         print(f"Error encountered during build for version '{version}'")
         raise
     else:
-        print(f"{emoji.emojize(':sparkles:', language='alias')} Successfully built docs for version '{version}'")
+        print(
+            f"{emoji.emojize(':sparkles:', language='alias')} Successfully built docs for version '{version}'"
+        )
     finally:
         # Revert any changes made to current branch
         print(f"Reverting changes made to '{version}'")
@@ -165,9 +170,13 @@ temp_dir.cleanup()
 n_failures = 0
 for version in supported_versions:
     if (combined_output_dir / version / "index.html").is_file():
-        print(f"{emoji.emojize(':white_check_mark:', language='alias')} {version} documentation built successfully")
+        print(
+            f"{emoji.emojize(':white_check_mark:', language='alias')} {version} documentation built successfully"
+        )
     else:
-        print(f"{emoji.emojize(':x:', language='alias')} {version} documentation failed to build!")
+        print(
+            f"{emoji.emojize(':x:', language='alias')} {version} documentation failed to build!"
+        )
         n_failures += 1
     if n_failures:
         sys.exit(1)

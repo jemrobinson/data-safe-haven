@@ -21,12 +21,16 @@ def run_tests(success, failure, *tests):
         if executable == "python":
             python_version = test[1]
             exists = run(f"ls /opt/pyenv/versions/{python_version}/bin/python")
-            version = run(f"/opt/pyenv/versions/{python_version}/bin/python --version | cut -d ' ' -f 2")
+            version = run(
+                f"/opt/pyenv/versions/{python_version}/bin/python --version | cut -d ' ' -f 2"
+            )
             executable = f"Python {'.'.join(python_version.split('.')[:2])}"
         elif executable == "pip":
             python_version = test[1]
             exists = run(f"ls /opt/pyenv/versions/{python_version}/bin/pip")
-            version = run(f"/opt/pyenv/versions/{python_version}/bin/pip -V | cut -d ' ' -f 2")
+            version = run(
+                f"/opt/pyenv/versions/{python_version}/bin/pip -V | cut -d ' ' -f 2"
+            )
             executable = f"pip (Python {'.'.join(python_version.split('.')[:2])})"
         else:
             exists = run(f"which {executable}")
@@ -42,8 +46,12 @@ def run_tests(success, failure, *tests):
 
 # Run all tests
 success, failure = 0, 0
-python_versions = [("python", os.path.split(path)[1]) for path in glob.glob("/opt/pyenv/versions/*")]
-pip_versions = [("pip", os.path.split(path)[1]) for path in glob.glob("/opt/pyenv/versions/*")]
+python_versions = [
+    ("python", os.path.split(path)[1]) for path in glob.glob("/opt/pyenv/versions/*")
+]
+pip_versions = [
+    ("pip", os.path.split(path)[1]) for path in glob.glob("/opt/pyenv/versions/*")
+]
 
 print("Programming languages:")
 (success, failure) = run_tests(
@@ -59,7 +67,10 @@ print("Programming languages:")
     ("R", "R --version | grep 'R version' | awk '{print $3}'"),
     ("rustc", "rustc --version 2>&1 | awk '{print $2}'"),
     ("scala", "scalac -version 2>&1 | awk '{print $4}'"),
-    ("spark-shell", "spark-shell --version 2>&1 | grep version | grep -v Scala | awk '{print $NF}'"),
+    (
+        "spark-shell",
+        "spark-shell --version 2>&1 | grep version | grep -v Scala | awk '{print $NF}'",
+    ),
 )
 
 print("Package managers:")
@@ -95,7 +106,10 @@ print("Development tools:")
 (success, failure) = run_tests(
     success,
     failure,
-    ("azuredatastudio", "dpkg -s azuredatastudio | grep '^Version:' | awk '{print $NF}'"),
+    (
+        "azuredatastudio",
+        "dpkg -s azuredatastudio | grep '^Version:' | awk '{print $NF}'",
+    ),
     ("bash", "bash --version | head -n 1 | awk '{print $4}'"),
     ("dbeaver-ce", "dpkg -s dbeaver-ce | grep '^Version:' | awk '{print $NF}'"),
     ("firefox", "firefox --version | awk '{print $NF}'"),

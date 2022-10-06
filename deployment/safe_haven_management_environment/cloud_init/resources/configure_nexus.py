@@ -6,15 +6,11 @@ import requests
 
 _NEXUS_REPOSITORIES = {
     "pypi_proxy": dict(
-        repo_type="pypi",
-        name="pypi-proxy",
-        remote_url="https://pypi.org/"
+        repo_type="pypi", name="pypi-proxy", remote_url="https://pypi.org/"
     ),
     "cran_proxy": dict(
-        repo_type="r",
-        name="cran-proxy",
-        remote_url="https://cran.r-project.org/"
-    )
+        repo_type="r", name="cran-proxy", remote_url="https://cran.r-project.org/"
+    ),
 }
 
 _ROLE_NAME = "safe haven user"
@@ -23,8 +19,14 @@ _ROLE_NAME = "safe haven user"
 class NexusAPI:
     """Interface to the Nexus REST API"""
 
-    def __init__(self, *, password, username="admin",
-                 nexus_path="http://localhost", nexus_port="80"):
+    def __init__(
+        self,
+        *,
+        password,
+        username="admin",
+        nexus_path="http://localhost",
+        nexus_port="80",
+    ):
         self.nexus_api_root = f"{nexus_path}:{nexus_port}/service/rest"
         self.username = username
         self.password = password
@@ -193,8 +195,9 @@ class NexusAPI:
                 )
                 print(response.content)
 
-    def create_content_selector_privilege(self, name, description, repo_type,
-                                          repo, content_selector):
+    def create_content_selector_privilege(
+        self, name, description, repo_type, repo, content_selector
+    ):
         """
         Create a new content selector privilege
 
@@ -312,7 +315,9 @@ class NexusAPI:
 
         print(f"updating role: {name}")
         response = requests.put(
-            (f"{self.nexus_api_root}/v1/security/roles/{name}"), auth=self.auth, json=payload
+            (f"{self.nexus_api_root}/v1/security/roles/{name}"),
+            auth=self.auth,
+            json=payload,
         )
         code = response.status_code
         if code == 204:
@@ -400,29 +405,25 @@ def main():
     tier_parser.add_argument(
         "--pypi-package-file",
         type=Path,
-        help="Path of the file of allowed PyPI packages, ignored when TIER!=3"
+        help="Path of the file of allowed PyPI packages, ignored when TIER!=3",
     )
     tier_parser.add_argument(
         "--cran-package-file",
         type=Path,
-        help="Path of the file of allowed CRAN packages, ignored when TIER!=3"
+        help="Path of the file of allowed CRAN packages, ignored when TIER!=3",
     )
 
-    subparsers = parser.add_subparsers(
-        title="subcommands",
-        required=True
-    )
+    subparsers = parser.add_subparsers(title="subcommands", required=True)
 
     # sub-command for changing initial password
     parser_password = subparsers.add_parser(
-        "change-initial-password",
-        help="Change the initial admin password"
+        "change-initial-password", help="Change the initial admin password"
     )
     parser_password.add_argument(
         "--path",
         type=Path,
         default=Path("./nexus-data"),
-        help="Path of the nexus-data directory [./nexus-data]"
+        help="Path of the nexus-data directory [./nexus-data]",
     )
     parser_password.set_defaults(func=change_initial_password)
 
@@ -430,7 +431,7 @@ def main():
     parser_configure = subparsers.add_parser(
         "initial-configuration",
         help="Configure the Nexus repository",
-        parents=[tier_parser]
+        parents=[tier_parser],
     )
     parser_configure.set_defaults(func=initial_configuration)
 
@@ -438,7 +439,7 @@ def main():
     parser_update = subparsers.add_parser(
         "update-allowlists",
         help="Update the Nexus package allowlists",
-        parents=[tier_parser]
+        parents=[tier_parser],
     )
     parser_update.set_defaults(func=update_allow_lists)
 
@@ -466,9 +467,7 @@ def change_initial_password(args):
         with password_file_path.open() as password_file:
             initial_password = password_file.read()
     except FileNotFoundError:
-        raise Exception(
-            "Initial password appears to have been already changed"
-        )
+        raise Exception("Initial password appears to have been already changed")
 
     nexus_api = NexusAPI(password=initial_password)
 
@@ -501,10 +500,12 @@ def initial_configuration(args):
     # Ensure only desired repositories exist
     recreate_repositories(nexus_api)
 
-    pypi_allowlist, cran_allowlist = get_allowlists(args.pypi_package_file,
-                                                    args.cran_package_file)
-    privileges = recreate_privileges(args.tier, nexus_api, pypi_allowlist,
-                                     cran_allowlist)
+    pypi_allowlist, cran_allowlist = get_allowlists(
+        args.pypi_package_file, args.cran_package_file
+    )
+    privileges = recreate_privileges(
+        args.tier, nexus_api, pypi_allowlist, cran_allowlist
+    )
 
     # Delete non-default roles
     nexus_api.delete_all_custom_roles()
@@ -513,7 +514,7 @@ def initial_configuration(args):
     nexus_api.create_role(
         name=_ROLE_NAME,
         description="allows access to selected packages",
-        privileges=privileges
+        privileges=privileges,
     )
 
     # Update anonymous users roles
@@ -542,16 +543,18 @@ def update_allow_lists(args):
 
     nexus_api = NexusAPI(password=args.admin_password)
 
-    pypi_allowlist, cran_allowlist = get_allowlists(args.pypi_package_file,
-                                                    args.cran_package_file)
-    privileges = recreate_privileges(args.tier, nexus_api, pypi_allowlist,
-                                     cran_allowlist)
+    pypi_allowlist, cran_allowlist = get_allowlists(
+        args.pypi_package_file, args.cran_package_file
+    )
+    privileges = recreate_privileges(
+        args.tier, nexus_api, pypi_allowlist, cran_allowlist
+    )
 
     # Update role for safe haven users
     nexus_api.update_role(
         name=_ROLE_NAME,
         description="allows access to selected packages",
-        privileges=privileges
+        privileges=privileges,
     )
 
 
@@ -567,9 +570,7 @@ def check_package_files(args):
     """
     for package_file in [args.pypi_package_file, args.cran_package_file]:
         if package_file and not package_file.is_file():
-            raise Exception(
-                f"Package allowlist file {package_file} does not exist"
-            )
+            raise Exception(f"Package allowlist file {package_file} does not exist")
 
 
 def get_allowlists(pypi_package_file, cran_package_file):
@@ -634,8 +635,7 @@ def recreate_repositories(nexus_api):
         nexus_api.create_proxy_repository(**repository)
 
 
-def recreate_privileges(tier, nexus_api, pypi_allowlist=[],
-                        cran_allowlist=[]):
+def recreate_privileges(tier, nexus_api, pypi_allowlist=[], cran_allowlist=[]):
     """
     Create content selectors and content selector privileges based on tier and
     allowlists in an idempotent manner
@@ -667,7 +667,7 @@ def recreate_privileges(tier, nexus_api, pypi_allowlist=[],
         description="Allow access to 'simple' directory in PyPI repository",
         expression='format == "pypi" and path=^"/simple"',
         repo_type=_NEXUS_REPOSITORIES["pypi_proxy"]["repo_type"],
-        repo=_NEXUS_REPOSITORIES["pypi_proxy"]["name"]
+        repo=_NEXUS_REPOSITORIES["pypi_proxy"]["name"],
     )
     pypi_privilege_names.append(privilege_name)
 
@@ -679,7 +679,7 @@ def recreate_privileges(tier, nexus_api, pypi_allowlist=[],
         description="Allow access to 'PACKAGES' file in CRAN repository",
         expression='format == "r" and path=="/src/contrib/PACKAGES"',
         repo_type=_NEXUS_REPOSITORIES["cran_proxy"]["repo_type"],
-        repo=_NEXUS_REPOSITORIES["cran_proxy"]["name"]
+        repo=_NEXUS_REPOSITORIES["cran_proxy"]["name"],
     )
     cran_privilege_names.append(privilege_name)
 
@@ -692,7 +692,7 @@ def recreate_privileges(tier, nexus_api, pypi_allowlist=[],
             description="Allow access to all PyPI packages",
             expression='format == "pypi" and path=^"/packages/"',
             repo_type=_NEXUS_REPOSITORIES["pypi_proxy"]["repo_type"],
-            repo=_NEXUS_REPOSITORIES["pypi_proxy"]["name"]
+            repo=_NEXUS_REPOSITORIES["pypi_proxy"]["name"],
         )
         pypi_privilege_names.append(privilege_name)
 
@@ -703,7 +703,7 @@ def recreate_privileges(tier, nexus_api, pypi_allowlist=[],
             description="Allow access to all CRAN packages",
             expression='format == "r" and path=^"/src/contrib"',
             repo_type=_NEXUS_REPOSITORIES["cran_proxy"]["repo_type"],
-            repo=_NEXUS_REPOSITORIES["cran_proxy"]["name"]
+            repo=_NEXUS_REPOSITORIES["cran_proxy"]["name"],
         )
         cran_privilege_names.append(privilege_name)
     elif tier == 3:
@@ -715,7 +715,7 @@ def recreate_privileges(tier, nexus_api, pypi_allowlist=[],
                 description=f"Allow access to {package} on PyPI",
                 expression=f'format == "pypi" and path=^"/packages/{package}/"',
                 repo_type=_NEXUS_REPOSITORIES["pypi_proxy"]["repo_type"],
-                repo=_NEXUS_REPOSITORIES["pypi_proxy"]["name"]
+                repo=_NEXUS_REPOSITORIES["pypi_proxy"]["name"],
             )
             pypi_privilege_names.append(privilege_name)
 
@@ -727,15 +727,16 @@ def recreate_privileges(tier, nexus_api, pypi_allowlist=[],
                 description=f"allow access to {package} on CRAN",
                 expression=f'format == "r" and path=^"/src/contrib/{package}"',
                 repo_type=_NEXUS_REPOSITORIES["cran_proxy"]["repo_type"],
-                repo=_NEXUS_REPOSITORIES["cran_proxy"]["name"]
+                repo=_NEXUS_REPOSITORIES["cran_proxy"]["name"],
             )
             cran_privilege_names.append(privilege_name)
 
-    return (pypi_privilege_names + cran_privilege_names)
+    return pypi_privilege_names + cran_privilege_names
 
 
-def create_content_selector_and_privilege(nexus_api, name, description,
-                                          expression, repo_type, repo):
+def create_content_selector_and_privilege(
+    nexus_api, name, description, expression, repo_type, repo
+):
     """
     Create a content selector and corresponding content selector privilege
 
@@ -750,9 +751,7 @@ def create_content_selector_and_privilege(nexus_api, name, description,
         repo: Name of the repository the content selector privilege applies to
     """
     nexus_api.create_content_selector(
-        name=name,
-        description=description,
-        expression=expression
+        name=name, description=description, expression=expression
     )
 
     nexus_api.create_content_selector_privilege(

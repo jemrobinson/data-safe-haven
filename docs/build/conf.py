@@ -20,16 +20,17 @@ earliest_supported_release = "v4.0.0"
 repo = git.Repo(search_parent_directories=True)
 repo_name = repo.remotes.origin.url.split(".git")[0].split("/")[-1]
 releases = sorted((t.name for t in repo.tags), reverse=True)
-supported_versions = (
-    releases[: releases.index(earliest_supported_release) + 1]
-    + [development_branch]
-)
+supported_versions = releases[: releases.index(earliest_supported_release) + 1] + [
+    development_branch
+]
 default_version = supported_versions[0]  # Latest stable release
 current_version = (
     [tag.name for tag in repo.tags if tag.commit == repo.head.commit]
     + [branch.name for branch in repo.branches if branch.commit == repo.head.commit]
     + [repo.head.commit]
-)[0]  # Tag or branch name or commit ID if no name is available
+)[
+    0
+]  # Tag or branch name or commit ID if no name is available
 
 
 # -- Customisation  -----------------------------------------------------------
