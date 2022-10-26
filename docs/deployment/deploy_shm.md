@@ -245,8 +245,8 @@ If you see a message `You need to add the following NS records to the parent DNS
 - To find the required values for the NS records on the portal, click `All resources` in the far left panel, search for `DNS Zone` and locate the DNS Zone with the SHM's domain.
 - The NS record will list four Azure name servers which must be duplicated to the parent DNS system.
 - If the parent domain has an Azure DNS Zone, create an NS record set in this zone.
-  - The name should be set to the subdomain (e.g. `project`) or `@` if using a custom domain, and the values duplicated from above
-  - For example, for a new subdomain `project.turingsafehaven.ac.uk`, duplicate the NS records from the Azure DNS Zone `project.turingsafehaven.ac.uk` to the Azure DNS Zone for `turingsafehaven.ac.uk`, by creating a record set with name `project`
+    - The name should be set to the subdomain (e.g. `project`) or `@` if using a custom domain, and the values duplicated from above
+    - For example, for a new subdomain `project.turingsafehaven.ac.uk`, duplicate the NS records from the Azure DNS Zone `project.turingsafehaven.ac.uk` to the Azure DNS Zone for `turingsafehaven.ac.uk`, by creating a record set with name `project`
     ```{image} deploy_shm/shm_subdomain_ns.png
     :alt: Subdomain NS record
     :align: center
