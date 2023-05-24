@@ -25,6 +25,13 @@ def get_id_from_rg(rg: resources.ResourceGroup) -> Input[str]:
     raise DataSafeHavenPulumiException(f"Resource group '{rg.name}'has no ID.")
 
 
+def get_id_from_virtual_network(vnet: network.VirtualNetwork) -> Input[str]:
+    """Get the ID of a virtual network"""
+    if isinstance(vnet.id, Output):
+        return vnet.id
+    raise DataSafeHavenPulumiException(f"Virtual network '{vnet.name}'has no ID.")
+
+
 def get_id_from_subnet(subnet: network.GetSubnetResult) -> str:
     """Get the ID of a subnet"""
     if id_ := subnet.id:
