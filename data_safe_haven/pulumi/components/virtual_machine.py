@@ -11,7 +11,7 @@ from data_safe_haven.helpers import replace_separators
 
 
 class VMProps:
-    """Properties for WindowsVMComponent"""
+    """Properties for VMComponent"""
 
     image_reference_args: Optional[compute.ImageReferenceArgs]
     log_analytics_extension_name: str
@@ -63,7 +63,7 @@ class VMProps:
 
 
 class WindowsVMProps(VMProps):
-    """Properties for WindowsVMComponent"""
+    """Properties for Windows VMComponent"""
 
     def __init__(
         self,
@@ -94,7 +94,7 @@ class WindowsVMProps(VMProps):
 
 
 class LinuxVMProps(VMProps):
-    """Properties for LinuxVMComponent"""
+    """Properties for Linux VMComponent"""
 
     def __init__(
         self,

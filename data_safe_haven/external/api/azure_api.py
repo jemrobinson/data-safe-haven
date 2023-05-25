@@ -80,17 +80,20 @@ class AzureApi(AzureMixin, LoggingMixin):
             DataSafeHavenAzureException if the configuration could not be compiled
         """
         # Connect to Azure clients
+        print(f"Connecting to azure: {self.credential} {self.subscription_id}")
         automation_client = AutomationClient(self.credential, self.subscription_id)
         # Wait until all modules are available
         while True:
             available_modules = automation_client.module.list_by_automation_account(
                 resource_group_name, automation_account_name
             )
+            print(f"available_modules: {available_modules}")
             available_module_names = [
                 module.name
                 for module in available_modules
                 if module.provisioning_state == "Succeeded"
             ]
+            print(f"available_module_names: {available_module_names}")
             if all(
                 module_name in available_module_names
                 for module_name in required_modules
@@ -99,6 +102,7 @@ class AzureApi(AzureMixin, LoggingMixin):
             time.sleep(10)
         # Begin creation
         compilation_job_name = f"{configuration_name}-{time.time_ns()}"
+        print(f"compilation_job_name: {compilation_job_name}")
         with suppress(ResourceExistsError):
             automation_client.dsc_compilation_job.begin_create(
                 resource_group_name=resource_group_name,
@@ -121,6 +125,7 @@ class AzureApi(AzureMixin, LoggingMixin):
                 compilation_job_name=compilation_job_name,
             )
             time.sleep(10)
+            print(f"Compilation result: {result}")
             with suppress(AttributeError):
                 if (result.provisioning_state == "Succeeded") and (
                     result.status == "Completed"

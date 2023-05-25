@@ -171,16 +171,16 @@ class DeploySRECommand(LoggingMixin, Command):  # type: ignore
             # Upload config to blob storage
             config.upload()
 
-            # Provision SRE with anything that could not be done in Pulumi
-            manager = SREProvisioningManager(
-                available_vm_skus=self.available_vm_skus,
-                shm_stack=shm_stack,
-                sre_name=self.sre_name,
-                sre_stack=stack,
-                subscription_name=config.subscription_name,
-                timezone=config.shm.timezone,
-            )
-            manager.run()
+            # # Provision SRE with anything that could not be done in Pulumi
+            # manager = SREProvisioningManager(
+            #     available_vm_skus=self.available_vm_skus,
+            #     shm_stack=shm_stack,
+            #     sre_name=self.sre_name,
+            #     sre_stack=stack,
+            #     subscription_name=config.subscription_name,
+            #     timezone=config.shm.timezone,
+            # )
+            # manager.run()
             return 0
 
         except DataSafeHavenException as exc:

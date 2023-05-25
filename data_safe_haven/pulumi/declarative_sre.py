@@ -159,6 +159,11 @@ class DeclarativeSRE:
             self.sre_name,
             SREResearchDesktopProps(
                 admin_password=data.password_secure_research_desktop_admin,
+                automation_account_modules=["nx"], # monitoring.automation_account_modules,
+                automation_account_name="shm-turingpulumi-aa", #monitoring.automation_account.name,
+                automation_account_registration_key="g003ZFmdZhzzbxxH7XChLZODNtxhB7YD8TCaW1SpqYWnTj10AnefAYlA0zxje2GRmqbhUyrhAfmFb75NqmUpQQ==", #monitoring.automation_account_primary_key,
+                automation_account_registration_url="https://1ab1a4f2-7835-415e-95e1-7a877e17197b.agentsvc.uks.azure-automation.net/accounts/1ab1a4f2-7835-415e-95e1-7a877e17197b", #monitoring.automation_account_agentsvc_url,
+                automation_account_resource_group_name="shm-turingpulumi-rg-monitoring", #monitoring.resource_group_name,
                 domain_sid=self.pulumi_opts.require(
                     "shm-domain_controllers-domain_sid"
                 ),
@@ -185,6 +190,7 @@ class DeclarativeSRE:
                 storage_account_securedata_name=data.storage_account_securedata_name,
                 security_group_name=f"Data Safe Haven Users SRE {self.sre_name}",
                 subnet_research_desktops=networking.subnet_research_desktops,
+                subscription_name=self.cfg.subscription_name,
                 virtual_network_resource_group=networking.resource_group,
                 virtual_network=networking.virtual_network,
                 vm_details=[

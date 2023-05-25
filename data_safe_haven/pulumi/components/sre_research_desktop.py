@@ -1,6 +1,6 @@
 # Standard library imports
 import pathlib
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional, Sequence, Tuple
 
 # Third party imports
 import chevron
@@ -9,13 +9,14 @@ from pulumi_azure_native import network, resources
 
 # Local imports
 from data_safe_haven.exceptions import DataSafeHavenPulumiException
-from data_safe_haven.helpers import b64encode, replace_separators
+from data_safe_haven.helpers import b64encode, FileReader, replace_separators
 from data_safe_haven.pulumi.common.transformations import (
     get_available_ips_from_subnet,
     get_name_from_rg,
     get_name_from_subnet,
     get_name_from_vnet,
 )
+from .automation_dsc_node import AutomationDscNode, LinuxAutomationDscNodeProps
 from .virtual_machine import LinuxVMProps, VMComponent
 
 
@@ -25,6 +26,11 @@ class SREResearchDesktopProps:
     def __init__(
         self,
         admin_password: Input[str],
+        automation_account_modules: Input[Sequence[str]],
+        automation_account_name: Input[str],
+        automation_account_registration_key: Input[str],
+        automation_account_registration_url: Input[str],
+        automation_account_resource_group_name: Input[str],
         domain_sid: Input[str],
         ldap_root_dn: Input[str],
         ldap_search_password: Input[str],
@@ -37,6 +43,7 @@ class SREResearchDesktopProps:
         storage_account_securedata_name: Input[str],
         security_group_name: Input[str],
         subnet_research_desktops: Input[network.GetSubnetResult],
+        subscription_name: Input[str],
         virtual_network_resource_group: Input[resources.ResourceGroup],
         virtual_network: Input[network.VirtualNetwork],
         vm_details: List[
@@ -45,6 +52,11 @@ class SREResearchDesktopProps:
     ):
         self.admin_password = Output.secret(admin_password)
         self.admin_username = "dshadmin"
+        self.automation_account_modules = automation_account_modules
+        self.automation_account_name = automation_account_name
+        self.automation_account_registration_key = automation_account_registration_key
+        self.automation_account_registration_url = automation_account_registration_url
+        self.automation_account_resource_group_name = automation_account_resource_group_name
         self.domain_sid = domain_sid
         self.ldap_root_dn = ldap_root_dn
         self.ldap_search_password = ldap_search_password
@@ -53,9 +65,10 @@ class SREResearchDesktopProps:
         self.location = location
         self.log_analytics_workspace_id = log_analytics_workspace_id
         self.log_analytics_workspace_key = log_analytics_workspace_key
+        self.security_group_name = security_group_name
         self.storage_account_userdata_name = storage_account_userdata_name
         self.storage_account_securedata_name = storage_account_securedata_name
-        self.security_group_name = security_group_name
+        self.subscription_name = subscription_name
         self.virtual_network_name = Output.from_input(virtual_network).apply(
             get_name_from_vnet
         )
@@ -93,6 +106,7 @@ class SREResearchDesktopComponent(ComponentResource):
     ):
         super().__init__("dsh:sre:SREResearchDesktopComponent", name, {}, opts)
         child_opts = ResourceOptions.merge(ResourceOptions(parent=self), opts)
+        resources_path = pathlib.Path(__file__).parent.parent.parent / "resources"
 
         # Deploy resource group
         resource_group = resources.ResourceGroup(
@@ -113,6 +127,14 @@ class SREResearchDesktopComponent(ComponentResource):
             storage_account_securedata_name=props.storage_account_securedata_name,
             security_group_name=props.security_group_name,
         ).apply(lambda kwargs: self.read_cloudinit(**kwargs))
+
+        # Load DSC configuration
+        dsc_configuration_name = "ResearchDesktop"
+        dsc_reader = FileReader(
+            resources_path
+            / "desired_state_configuration"
+            / f"{dsc_configuration_name}.ps1"
+        )
 
         # Deploy a variable number of VMs depending on the input parameters
         vms = [
@@ -137,6 +159,37 @@ class SREResearchDesktopComponent(ComponentResource):
             )
             for vm_idx, vm_name, vm_size in props.vm_details
         ]
+
+        # Register each VM for automated DSC
+        dsc_configuration_name = "ResearchDesktop"
+        dsc_reader = FileReader(
+            resources_path
+            / "desired_state_configuration"
+            / f"{dsc_configuration_name}.ps1"
+        )
+        for idx, vm in enumerate(vms):
+            AutomationDscNode(
+                replace_separators(f"{self._name}_srd_vm_{idx}_node", "_"),
+                LinuxAutomationDscNodeProps(
+                    automation_account_name=props.automation_account_name,
+                    automation_account_registration_key=props.automation_account_registration_key,
+                    automation_account_registration_url=props.automation_account_registration_url,
+                    automation_account_resource_group_name=props.automation_account_resource_group_name,
+                    configuration_name=dsc_configuration_name,
+                    dsc_description="DSC for Data Safe Haven SRDs",
+                    dsc_file=dsc_reader,
+                    dsc_parameters={},
+                    dsc_required_modules=props.automation_account_modules,
+                    location=props.location,
+                    subscription_name=props.subscription_name,
+                    vm_name=vm.vm_name,
+                    vm_resource_group_name=resource_group.name,
+                ),
+                opts=ResourceOptions.merge(
+                    ResourceOptions(depends_on=[vm]),
+                    child_opts,
+                ),
+            )
 
         # Get details for each deployed VM
         vm_outputs = [

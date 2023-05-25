@@ -85,6 +85,10 @@ class SHMMonitoringComponent(ComponentResource):
                 "6.2.0",
                 "60b7cc2c578248f23c5b871b093db268a1c1bd89f5ccafc45d9a65c3f0621dca",
             ),
+            "nx": (
+                "1.0",
+                "1e806cbc64f77e5631818aa6aaea4d4e6272485e03b6bec9cb37e45bfad4c007",
+            ),
             "PSModulesDsc": (
                 "1.0.13.0",
                 "b970d3ef7f3694e49993ec434fd166befe493ccaf418b9a79281dda2e230603b",

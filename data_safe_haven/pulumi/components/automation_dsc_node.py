@@ -2,7 +2,7 @@
 # Standard library imports
 import pathlib
 import time
-from typing import Dict, Optional, Sequence
+from typing import Any, Dict, Optional, Sequence
 
 # Third party imports
 from pulumi import ComponentResource, Input, Output, ResourceOptions
@@ -15,6 +15,10 @@ from ..dynamic.compiled_dsc import CompiledDsc, CompiledDscProps
 
 class AutomationDscNodeProps:
     """Props for the AutomationDscNode class"""
+    vm_extension_name: str
+    vm_extension_publisher: str
+    vm_extension_version: str
+    vm_extension_type: str
 
     def __init__(
         self,
@@ -48,6 +52,48 @@ class AutomationDscNodeProps:
         self.vm_name = vm_name
         self.vm_resource_group_name = vm_resource_group_name
 
+
+class WindowsAutomationDscNodeProps(AutomationDscNodeProps):
+    """Properties for Windows AutomationDscNode"""
+
+    def __init__(
+        self,
+        *args: Any,
+        **kwargs: Any,
+    ):
+        super().__init__(*args, **kwargs)
+        self.vm_extension_name = "Microsoft.Powershell.DSC"
+        self.vm_extension_publisher = "Microsoft.Powershell"
+        self.vm_extension_type = "DSC"
+        self.vm_extension_version = "2.77"
+
+
+class LinuxAutomationDscNodeProps(AutomationDscNodeProps):
+    """Properties for Linux AutomationDscNode"""
+
+    def __init__(
+        self,
+        *args: Any,
+        **kwargs: Any,
+    ):
+        super().__init__(*args, **kwargs)
+        self.vm_extension_name = "DSCForLinux"
+        self.vm_extension_publisher = "Microsoft.OSTCExtensions"
+        self.vm_extension_type = "DSCForLinux"
+        self.vm_extension_version = "3.0"
+
+# {
+#     "name": "DSCForLinux",
+#     "publisher": "Microsoft.OSTCExtensions",
+#     "typeHandlerVersion": "3.0",
+#     "typePropertiesType": "DSCForLinux"
+#   },
+#   {
+#     "name": "Microsoft.Powershell.DSC",
+#     "publisher": "Microsoft.Powershell",
+#     "typeHandlerVersion": "2.77",
+#     "typePropertiesType": "DSC"
+#   },
 
 class AutomationDscNode(ComponentResource):
     """Deploy an AutomationDscNode with Pulumi"""
@@ -89,7 +135,7 @@ class AutomationDscNode(ComponentResource):
             ),
         )
         dsc_compiled = CompiledDsc(
-            f"{self._name}_dsc_compiled",
+            f"{self._name}_compiled_dsc",
             CompiledDscProps(
                 automation_account_name=props.automation_account_name,
                 configuration_name=dsc.name,
@@ -108,7 +154,7 @@ class AutomationDscNode(ComponentResource):
             f"{self._name}_dsc_extension",
             auto_upgrade_minor_version=True,
             location=props.location,
-            publisher="Microsoft.Powershell",
+            publisher=props.vm_extension_publisher,
             resource_group_name=props.vm_resource_group_name,
             settings={
                 "configurationArguments": {
@@ -130,12 +176,13 @@ class AutomationDscNode(ComponentResource):
                     }
                 }
             },
-            type="DSC",
-            type_handler_version="2.77",
+            type=props.vm_extension_type,
+            type_handler_version=props.vm_extension_version, #"2.77",
             vm_name=props.vm_name,
-            vm_extension_name="Microsoft.Powershell.DSC",
+            vm_extension_name=props.vm_extension_name,
             opts=ResourceOptions.merge(
                 ResourceOptions(depends_on=[dsc_compiled]),
                 child_opts,
             ),
         )
+
