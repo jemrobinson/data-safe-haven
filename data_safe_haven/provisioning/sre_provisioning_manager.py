@@ -22,10 +22,10 @@ class SREProvisioningManager:
         subscription_name: str,
         timezone: str,
     ):
-        super().__init__()
+        self._available_vm_skus: dict[str, dict[str, Any]] | None = None
+        self.azure_location = shm_stack.cfg.azure.location
         self.logger = LoggingSingleton()
         self.resources_path = pathlib.Path(__file__).parent.parent / "resources"
-        self.azure_location = shm_stack.cfg.azure.location
         self.sre_name = sre_name
         self.subscription_name = subscription_name
 
@@ -58,8 +58,10 @@ class SREProvisioningManager:
 
         # Construct VM parameters
         self.research_desktops = {}
-        for idx, vm in enumerate(sre_stack.output("research_desktops")["vm_outputs"]):
-            self.research_desktops[f"SRD {idx}"] = {
+        for idx, vm in enumerate(
+            sre_stack.output("research_desktops")["vm_outputs"], start=1
+        ):
+            self.research_desktops[f"Workspace {idx}"] = {
                 "cpus": int(self.available_vm_skus[vm["sku"]]["vCPUs"]),
                 "gpus": int(self.available_vm_skus[vm["sku"]]["GPUs"]),
                 "ip_address": vm["ip_address"],
