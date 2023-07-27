@@ -16,7 +16,6 @@ class SREProvisioningManager:
 
     def __init__(
         self,
-        available_vm_skus: dict[str, dict[str, Any]],
         shm_stack: PulumiSHMStack,
         sre_name: str,
         sre_stack: PulumiSREStack,
@@ -26,6 +25,7 @@ class SREProvisioningManager:
         super().__init__()
         self.logger = LoggingSingleton()
         self.resources_path = pathlib.Path(__file__).parent.parent / "resources"
+        self.azure_location = shm_stack.cfg.azure.location
         self.sre_name = sre_name
         self.subscription_name = subscription_name
 
@@ -60,13 +60,23 @@ class SREProvisioningManager:
         self.research_desktops = {}
         for idx, vm in enumerate(sre_stack.output("research_desktops")["vm_outputs"]):
             self.research_desktops[f"SRD {idx}"] = {
-                "cpus": int(available_vm_skus[vm["sku"]]["vCPUs"]),
-                "gpus": int(available_vm_skus[vm["sku"]]["GPUs"]),
+                "cpus": int(self.available_vm_skus[vm["sku"]]["vCPUs"]),
+                "gpus": int(self.available_vm_skus[vm["sku"]]["GPUs"]),
                 "ip_address": vm["ip_address"],
                 "name": vm["name"],
-                "ram": int(available_vm_skus[vm["sku"]]["MemoryGB"]),
+                "ram": int(self.available_vm_skus[vm["sku"]]["MemoryGB"]),
                 "sku": vm["sku"],
             }
+
+    @property
+    def available_vm_skus(self) -> dict[str, dict[str, Any]]:
+        """Load available VM SKUs for this region"""
+        if not self._available_vm_skus:
+            azure_api = AzureApi(self.subscription_name)
+            self._available_vm_skus = azure_api.list_available_vm_skus(
+                self.azure_location
+            )
+        return self._available_vm_skus
 
     def create_security_groups(self) -> None:
         azure_api = AzureApi(self.subscription_name)
