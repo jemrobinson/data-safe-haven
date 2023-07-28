@@ -24,7 +24,12 @@ from data_safe_haven.functions import (
     validate_ip_address,
     validate_timezone,
 )
-from data_safe_haven.utility import LoggingSingleton, SoftwarePackageCategory
+from data_safe_haven.utility import (
+    DecoderValidated,
+    LoggingSingleton,
+    SoftwarePackageCategory,
+    Validated,
+)
 
 from .backend_settings import BackendSettings
 
@@ -162,71 +167,84 @@ class ConfigSectionSHM:
 
 
 @dataclass
+class ConfigSectionRemoteDesktopOpts:
+    @staticmethod
+    def update_allow_copy(old: bool | None, new: bool | None) -> bool:
+        if old is not None and old != new:
+            LoggingSingleton().debug(
+                f"[bold]allow_copy[/] changed from [green]{old}[/] to [green]{new}[/]."
+            )
+        return new is not None
+
+    @staticmethod
+    def update_allow_paste(old: bool | None, new: bool | None) -> bool:
+        if old is not None and old != new:
+            LoggingSingleton().debug(
+                f"[bold]allow_paste[/] changed from [green]{old}[/] to [green]{new}[/]."
+            )
+        return new is not None
+
+    allow_copy: Validated[bool] = Validated[bool](  # noqa: RUF009
+        on_update=update_allow_copy
+    )
+    allow_paste: Validated[bool] = Validated[bool](  # noqa: RUF009
+        on_update=update_allow_paste
+    )
+
+    def update(
+        self, *, allow_copy: bool | None = None, allow_paste: bool | None = None
+    ) -> None:
+        # Set whether copying text out of the SRE is allowed
+        self.allow_copy = allow_copy
+        LoggingSingleton().info(
+            f"[bold]Copying text out of the SRE[/] will be [green]{'allowed' if self.allow_copy else 'forbidden'}[/]."
+        )
+        # Set whether pasting text into the SRE is allowed
+        self.allow_paste = allow_paste
+        LoggingSingleton().info(
+            f"[bold]Pasting text into the SRE[/] will be [green]{'allowed' if self.allow_paste else 'forbidden'}[/]."
+        )
+
+    def validate(self) -> None:
+        """Validate input parameters"""
+        if not isinstance(self.allow_copy, bool):
+            msg = f"Invalid value for 'allow_copy' ({self.allow_copy})."
+            raise ValueError(msg)
+        if not isinstance(self.allow_paste, bool):
+            msg = f"Invalid value for 'allow_paste' ({self.allow_paste})."
+            raise ValueError(msg)
+
+    def to_dict(self) -> dict[str, bool]:
+        self.validate()
+        return as_dict(chili.encode(self))
+
+
+@dataclass
+class ConfigSectionResearchDesktopOpts:
+    sku: str = ""
+
+    def validate(self) -> None:
+        """Validate input parameters"""
+        try:
+            validate_azure_vm_sku(self.sku)
+        except Exception as exc:
+            msg = f"Invalid value for 'sku' ({self.sku}).\n{exc}"
+            raise ValueError(msg) from exc
+
+    def to_dict(self) -> dict[str, str]:
+        self.validate()
+        return as_dict(chili.encode(self))
+
+
+@dataclass
 class ConfigSectionSRE:
-    @dataclass
-    class ConfigSectionRemoteDesktopOpts:
-        allow_copy: bool = False
-        allow_paste: bool = False
-
-        def update(
-            self, *, allow_copy: bool | None = None, allow_paste: bool | None = None
-        ) -> None:
-            # Set whether copying text out of the SRE is allowed
-            if allow_copy:
-                LoggingSingleton().debug(
-                    f"[bold]Copying text out of the SRE[/] was previously [green]{'allowed' if self.allow_copy else 'forbidden'}[/]."
-                )
-                self.allow_copy = allow_copy
-            LoggingSingleton().info(
-                f"[bold]Copying text out of the SRE[/] will be [green]{'allowed' if self.allow_copy else 'forbidden'}[/]."
-            )
-            # Set whether pasting text into the SRE is allowed
-            if allow_paste:
-                LoggingSingleton().debug(
-                    f"[bold]Pasting text into the SRE[/] was previously [green]{'allowed' if self.allow_paste else 'forbidden'}[/]."
-                )
-                self.allow_paste = allow_paste
-            LoggingSingleton().info(
-                f"[bold]Pasting text into the SRE[/] will be [green]{'allowed' if self.allow_paste else 'forbidden'}[/]."
-            )
-
-        def validate(self) -> None:
-            """Validate input parameters"""
-            if not isinstance(self.allow_copy, bool):
-                msg = f"Invalid value for 'allow_copy' ({self.allow_copy})."
-                raise ValueError(msg)
-            if not isinstance(self.allow_paste, bool):
-                msg = f"Invalid value for 'allow_paste' ({self.allow_paste})."
-                raise ValueError(msg)
-
-        def to_dict(self) -> dict[str, bool]:
-            self.validate()
-            return as_dict(chili.encode(self))
-
-    @dataclass
-    class ConfigSectionResearchDesktopOpts:
-        sku: str = ""
-
-        def validate(self) -> None:
-            """Validate input parameters"""
-            try:
-                validate_azure_vm_sku(self.sku)
-            except Exception as exc:
-                msg = f"Invalid value for 'sku' ({self.sku}).\n{exc}"
-                raise ValueError(msg) from exc
-
-        def to_dict(self) -> dict[str, str]:
-            self.validate()
-            return as_dict(chili.encode(self))
-
     data_provider_ip_addresses: list[str] = field(default_factory=list)
     index: int = 0
     remote_desktop: ConfigSectionRemoteDesktopOpts = field(
         default_factory=ConfigSectionRemoteDesktopOpts
     )
-    # NB. we cannot use defaultdict here until
-    # https://github.com/python/cpython/pull/32056 is included in the Python
-    # version we are using
+    # NB. Unless our Python version has https://github.com/python/cpython/pull/32056
+    # included, we cannot use defaultdict here.
     research_desktops: dict[str, ConfigSectionResearchDesktopOpts] = field(
         default_factory=dict
     )
@@ -264,7 +282,7 @@ class ConfigSectionSRE:
                 for idx, vm_sku in enumerate(research_desktops):
                     self.research_desktops[
                         f"workspace-{idx:02d}"
-                    ] = ConfigSectionSRE.ConfigSectionResearchDesktopOpts(sku=vm_sku)
+                    ] = ConfigSectionResearchDesktopOpts(sku=vm_sku)
         LoggingSingleton().info(
             f"[bold]Research desktops[/] will be [green]{list(self.research_desktops.keys())}[/]."
         )
@@ -366,6 +384,9 @@ class Config:
             )
         # Attempt to decode each config section
         if yaml_input:
+            # type_decoders = {SelfValidatingAttribute[bool]: SelfValidatingBoolDecoder()}
+            # decoder = Decoder[Pet](decoders=type_decoders)
+
             if "azure" in yaml_input:
                 self.azure_ = chili.decode(yaml_input["azure"], ConfigSectionAzure)
             if "backend" in yaml_input:
@@ -378,7 +399,11 @@ class Config:
                 self.shm_ = chili.decode(yaml_input["shm"], ConfigSectionSHM)
             if "sre" in yaml_input:
                 for sre_name, sre_details in dict(yaml_input["sre"]).items():
-                    self.sres[sre_name] = chili.decode(sre_details, ConfigSectionSRE)
+                    self.sres[sre_name] = chili.decode(
+                        sre_details,
+                        ConfigSectionSRE,
+                        decoders={Validated[bool]: DecoderValidated[bool]()},
+                    )
 
     @property
     def azure(self) -> ConfigSectionAzure:
