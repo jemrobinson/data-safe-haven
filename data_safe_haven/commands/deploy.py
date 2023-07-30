@@ -140,12 +140,19 @@ def sre(
     ] = None,
 ) -> None:
     """Deploy a Secure Research Environment"""
+    print(f"deploy name {name}")
+    print(f"deploy allow_copy {allow_copy}")
+    print(f"deploy allow_paste {allow_paste}")
+    print(f"deploy data_provider_ip_addresses {data_provider_ip_addresses}")
+    print(f"deploy research_desktops {research_desktops}")
+    print(f"deploy software_packages {software_packages}")
+    print(f"deploy user_ip_addresses {user_ip_addresses}")
     DeploySRECommand()(
         name,
         allow_copy,
         allow_paste,
-        data_provider_ip_addresses,
-        research_desktops,
+        data_provider_ip_addresses if data_provider_ip_addresses else None,
+        research_desktops if research_desktops else None,
         software_packages,
-        user_ip_addresses,
+        user_ip_addresses if user_ip_addresses else None,
     )

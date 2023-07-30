@@ -32,20 +32,35 @@ class DeploySRECommand:
     ) -> None:
         """Typer command line entrypoint"""
         sre_name = "UNKNOWN"
+        print(f"deploy_sre allow_copy {allow_copy}")
+        print(f"deploy_sre allow_paste {allow_paste}")
+        print(f"deploy_sre data_provider_ip_addresses {data_provider_ip_addresses}")
+        print(f"deploy_sre research_desktops {research_desktops}")
+        print(f"deploy_sre software_packages {software_packages}")
+        print(f"deploy_sre user_ip_addresses {user_ip_addresses}")
         try:
             # Use a JSON-safe SRE name
             sre_name = alphanumeric(name).lower()
 
             # Load config file
             config = Config()
-            config.sre(sre_name).update(
-                allow_copy=allow_copy,
-                allow_paste=allow_paste,
-                data_provider_ip_addresses=data_provider_ip_addresses,
-                research_desktops=research_desktops,
-                software_packages=software_packages,
-                user_ip_addresses=user_ip_addresses,
-            )
+            if allow_copy is not None:
+                config.sre(sre_name).remote_desktop.allow_copy = allow_copy
+            if allow_paste is not None:
+                config.sre(sre_name).remote_desktop.allow_paste = allow_paste
+            if data_provider_ip_addresses is not None:
+                config.sre(
+                    sre_name
+                ).data_provider_ip_addresses = data_provider_ip_addresses
+            if research_desktops is not None:
+                config.sre(sre_name).set_research_desktops(research_desktops)
+            if software_packages is not None:
+                config.sre(sre_name).software_packages = software_packages
+            if user_ip_addresses is not None:
+                config.sre(sre_name).research_user_ip_addresses = user_ip_addresses
+            config.sre(sre_name).summarise()
+            print(config)
+            raise Exception
 
             # Load GraphAPI as this may require user-interaction that is not
             # possible as part of a Pulumi declarative command

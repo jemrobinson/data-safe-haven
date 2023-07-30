@@ -1,7 +1,7 @@
 """A descriptor attribute that enforces type checking"""
 from typing import Any, Generic, TypeVar, cast
 
-from chili import TypeDecoder
+from chili import TypeDecoder, TypeEncoder
 
 from data_safe_haven.exceptions import DataSafeHavenParameterError
 
@@ -68,12 +68,12 @@ class TypeChecked(Generic[T]):
         try:
             value = instance.__dict__[self.name]
             return self.check_type(value)
-        except (AttributeError, KeyError):
+        except (AttributeError, DataSafeHavenParameterError, KeyError):
             if not isinstance(self.default, UnsetType):
                 return self.default
             return self
 
-    def __set__(self, instance: object, value: T) -> None:
+    def __set__(self, instance: object, value: T | "TypeChecked[T]") -> None:
         """Set the stored value
 
         Validate the provided value using the validator function
@@ -85,11 +85,22 @@ class TypeChecked(Generic[T]):
         Raises:
             A DataSafeHavenParameterError if the validation fails
         """
-        instance.__dict__[self.name] = self.check_type(value)
+        # print(f"__set__ check_type {value} {self.name} {self}")
+        if isinstance(value, TypeChecked):
+            # print(f"{self.name}: adding TypeChecked")
+            instance.__dict__[self.name] = value
+        else:
+            # print(f"{self.name}: adding value {value} after TypeChecking")
+            instance.__dict__[self.name] = self.check_type(value)
 
 
 class DecoderTypeChecked(TypeDecoder, Generic[T]):
     """A chili type decoder that returns its input"""
 
     def decode(self, value: T) -> T:
+        return value
+
+
+class EncoderTypeChecked(TypeEncoder, Generic[T]):
+    def encode(self, value: T) -> T:
         return value

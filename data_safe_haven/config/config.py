@@ -25,59 +25,78 @@ from data_safe_haven.functions import (
     validate_timezone,
 )
 from data_safe_haven.utility import (
-    DecoderValidated,
+    DecoderTypeChecked,
+    EncoderTypeChecked,
     LoggingSingleton,
     SoftwarePackageCategory,
-    Validated,
+    TypeChecked,
 )
 
 from .backend_settings import BackendSettings
 
+decoders: dict[Any, chili.TypeDecoder] = {
+    list[TypeChecked[str]]: DecoderTypeChecked[list[str]](),
+    TypeChecked[bool]: DecoderTypeChecked[bool](),
+    TypeChecked[int]: DecoderTypeChecked[int](),
+    TypeChecked[str]: DecoderTypeChecked[str](),
+}
+
+encoders: dict[Any, chili.TypeEncoder] = {
+    list[TypeChecked[str]]: EncoderTypeChecked[list[str]](),
+    TypeChecked[bool]: EncoderTypeChecked[bool](),
+    TypeChecked[int]: EncoderTypeChecked[int](),
+    TypeChecked[str]: EncoderTypeChecked[str](),
+}
+
 
 @dataclass
 class ConfigSectionAzure:
-    admin_group_id: str = ""
-    location: str = ""
-    subscription_id: str = ""
-    tenant_id: str = ""
+    admin_group_id: TypeChecked[str] = TypeChecked[str]()
+    location: TypeChecked[str] = TypeChecked[str]()
+    subscription_id: TypeChecked[str] = TypeChecked[str]()
+    tenant_id: TypeChecked[str] = TypeChecked[str]()
+
+    def to_dict(self) -> dict[str, str]:
+        self.validate()
+        return as_dict(chili.encode(self, encoders=encoders))
 
     def validate(self) -> None:
         """Validate input parameters"""
         try:
-            validate_aad_guid(self.admin_group_id)
+            validate_aad_guid(str(self.admin_group_id))
         except Exception as exc:
             msg = f"Invalid value for 'admin_group_id' ({self.admin_group_id}).\n{exc}"
             raise ValueError(msg) from exc
         try:
-            validate_azure_location(self.location)
+            validate_azure_location(str(self.location))
         except Exception as exc:
             msg = f"Invalid value for 'location' ({self.location}).\n{exc}"
             raise ValueError(msg) from exc
         try:
-            validate_aad_guid(self.subscription_id)
+            validate_aad_guid(str(self.subscription_id))
         except Exception as exc:
             msg = (
                 f"Invalid value for 'subscription_id' ({self.subscription_id}).\n{exc}"
             )
             raise ValueError(msg) from exc
         try:
-            validate_aad_guid(self.tenant_id)
+            validate_aad_guid(str(self.tenant_id))
         except Exception as exc:
             msg = f"Invalid value for 'tenant_id' ({self.tenant_id}).\n{exc}"
             raise ValueError(msg) from exc
 
-    def to_dict(self) -> dict[str, str]:
-        self.validate()
-        return as_dict(chili.encode(self))
-
 
 @dataclass
 class ConfigSectionBackend:
-    key_vault_name: str = ""
-    managed_identity_name: str = ""
-    resource_group_name: str = ""
-    storage_account_name: str = ""
-    storage_container_name: str = ""
+    key_vault_name: TypeChecked[str] = TypeChecked[str]()
+    managed_identity_name: TypeChecked[str] = TypeChecked[str]()
+    resource_group_name: TypeChecked[str] = TypeChecked[str]()
+    storage_account_name: TypeChecked[str] = TypeChecked[str]()
+    storage_container_name: TypeChecked[str] = TypeChecked[str]()
+
+    def to_dict(self) -> dict[str, str]:
+        self.validate()
+        return as_dict(chili.encode(self, encoders=encoders))
 
     def validate(self) -> None:
         """Validate input parameters"""
@@ -99,17 +118,19 @@ class ConfigSectionBackend:
             msg = f"Invalid value for 'storage_container_name' ({self.storage_container_name})."
             raise ValueError(msg)
 
-    def to_dict(self) -> dict[str, str]:
-        self.validate()
-        return as_dict(chili.encode(self))
-
 
 @dataclass
 class ConfigSectionPulumi:
-    encryption_key_id: str = ""
-    encryption_key_name: str = "pulumi-encryption-key"
+    encryption_key_id: TypeChecked[str] = TypeChecked[str]()
+    encryption_key_name: TypeChecked[str] = TypeChecked[str](
+        default="pulumi-encryption-key"
+    )
     stacks: dict[str, str] = field(default_factory=dict)
-    storage_container_name: str = "pulumi"
+    storage_container_name: TypeChecked[str] = TypeChecked[str](default="pulumi")
+
+    def to_dict(self) -> dict[str, Any]:
+        self.validate()
+        return as_dict(chili.encode(self, encoders=encoders))
 
     def validate(self) -> None:
         """Validate input parameters"""
@@ -117,35 +138,35 @@ class ConfigSectionPulumi:
             msg = f"Invalid value for 'encryption_key_id' ({self.encryption_key_id})."
             raise ValueError(msg)
 
-    def to_dict(self) -> dict[str, Any]:
-        self.validate()
-        return as_dict(chili.encode(self))
-
 
 @dataclass
 class ConfigSectionSHM:
-    aad_tenant_id: str = ""
-    admin_email_address: str = ""
-    admin_ip_addresses: list[str] = field(default_factory=list)
-    fqdn: str = ""
-    name: str = ""
-    timezone: str = ""
+    aad_tenant_id: TypeChecked[str] = TypeChecked[str]()
+    admin_email_address: TypeChecked[str] = TypeChecked[str]()
+    admin_ip_addresses: list[TypeChecked[str]] = field(default_factory=list)
+    fqdn: TypeChecked[str] = TypeChecked[str]()
+    name: TypeChecked[str] = TypeChecked[str]()
+    timezone: TypeChecked[str] = TypeChecked[str]()
+
+    def to_dict(self) -> dict[str, Any]:
+        self.validate()
+        return as_dict(chili.encode(self, encoders=encoders))
 
     def validate(self) -> None:
         """Validate input parameters"""
         try:
-            validate_aad_guid(self.aad_tenant_id)
+            validate_aad_guid(str(self.aad_tenant_id))
         except Exception as exc:
             msg = f"Invalid value for 'aad_tenant_id' ({self.aad_tenant_id}).\n{exc}"
             raise ValueError(msg) from exc
         try:
-            validate_email_address(self.admin_email_address)
+            validate_email_address(str(self.admin_email_address))
         except Exception as exc:
             msg = f"Invalid value for 'admin_email_address' ({self.admin_email_address}).\n{exc}"
             raise ValueError(msg) from exc
         try:
             for ip in self.admin_ip_addresses:
-                validate_ip_address(ip)
+                validate_ip_address(str(ip))
         except Exception as exc:
             msg = f"Invalid value for 'admin_ip_addresses' ({self.admin_ip_addresses}).\n{exc}"
             raise ValueError(msg) from exc
@@ -156,52 +177,26 @@ class ConfigSectionSHM:
             msg = f"Invalid value for 'name' ({self.name})."
             raise ValueError(msg)
         try:
-            validate_timezone(self.timezone)
+            validate_timezone(str(self.timezone))
         except Exception as exc:
             msg = f"Invalid value for 'timezone' ({self.timezone}).\n{exc}"
             raise ValueError(msg) from exc
 
-    def to_dict(self) -> dict[str, Any]:
-        self.validate()
-        return as_dict(chili.encode(self))
-
 
 @dataclass
-class ConfigSectionRemoteDesktopOpts:
-    @staticmethod
-    def update_allow_copy(old: bool | None, new: bool | None) -> bool:
-        if old is not None and old != new:
-            LoggingSingleton().debug(
-                f"[bold]allow_copy[/] changed from [green]{old}[/] to [green]{new}[/]."
-            )
-        return new is not None
+class ConfigSubsectionRemoteDesktopOpts:
+    allow_copy: TypeChecked[bool] = TypeChecked[bool]()
+    allow_paste: TypeChecked[bool] = TypeChecked[bool]()
 
-    @staticmethod
-    def update_allow_paste(old: bool | None, new: bool | None) -> bool:
-        if old is not None and old != new:
-            LoggingSingleton().debug(
-                f"[bold]allow_paste[/] changed from [green]{old}[/] to [green]{new}[/]."
-            )
-        return new is not None
-
-    allow_copy: Validated[bool] = Validated[bool](  # noqa: RUF009
-        on_update=update_allow_copy
-    )
-    allow_paste: Validated[bool] = Validated[bool](  # noqa: RUF009
-        on_update=update_allow_paste
-    )
-
-    def update(
-        self, *, allow_copy: bool | None = None, allow_paste: bool | None = None
-    ) -> None:
-        # Set whether copying text out of the SRE is allowed
-        self.allow_copy = allow_copy
-        LoggingSingleton().info(
+    def summarise(self) -> None:
+        """Log a summary of this object"""
+        # State whether copying text out of the SRE is allowed
+        logger = LoggingSingleton()
+        logger.info(
             f"[bold]Copying text out of the SRE[/] will be [green]{'allowed' if self.allow_copy else 'forbidden'}[/]."
         )
-        # Set whether pasting text into the SRE is allowed
-        self.allow_paste = allow_paste
-        LoggingSingleton().info(
+        # State whether pasting text into the SRE is allowed
+        logger.info(
             f"[bold]Pasting text into the SRE[/] will be [green]{'allowed' if self.allow_paste else 'forbidden'}[/]."
         )
 
@@ -214,102 +209,80 @@ class ConfigSectionRemoteDesktopOpts:
             msg = f"Invalid value for 'allow_paste' ({self.allow_paste})."
             raise ValueError(msg)
 
-    def to_dict(self) -> dict[str, bool]:
-        self.validate()
-        return as_dict(chili.encode(self))
-
 
 @dataclass
-class ConfigSectionResearchDesktopOpts:
+class ConfigSubsectionResearchDesktopOpts:
     sku: str = ""
+
+    def summarise(self) -> None:
+        """Log a summary of this object"""
+        LoggingSingleton().info(
+            f"[bold]Copying text out of the SRE[/] will be [green]{'allowed' if self.sku else 'forbidden'}[/]."
+        )
 
     def validate(self) -> None:
         """Validate input parameters"""
         try:
-            validate_azure_vm_sku(self.sku)
+            validate_azure_vm_sku(str(self.sku))
         except Exception as exc:
             msg = f"Invalid value for 'sku' ({self.sku}).\n{exc}"
             raise ValueError(msg) from exc
 
-    def to_dict(self) -> dict[str, str]:
-        self.validate()
-        return as_dict(chili.encode(self))
-
 
 @dataclass
 class ConfigSectionSRE:
-    data_provider_ip_addresses: list[str] = field(default_factory=list)
-    index: int = 0
-    remote_desktop: ConfigSectionRemoteDesktopOpts = field(
-        default_factory=ConfigSectionRemoteDesktopOpts
+    data_provider_ip_addresses: list[TypeChecked[str]] = field(default_factory=list)
+    index: TypeChecked[int] = TypeChecked[int](default=0)
+    remote_desktop: ConfigSubsectionRemoteDesktopOpts = field(
+        default_factory=ConfigSubsectionRemoteDesktopOpts
     )
     # NB. Unless our Python version has https://github.com/python/cpython/pull/32056
     # included, we cannot use defaultdict here.
-    research_desktops: dict[str, ConfigSectionResearchDesktopOpts] = field(
+    research_desktops: dict[str, ConfigSubsectionResearchDesktopOpts] = field(
         default_factory=dict
     )
-    research_user_ip_addresses: list[str] = field(default_factory=list)
+    research_user_ip_addresses: list[TypeChecked[str]] = field(default_factory=list)
     software_packages: SoftwarePackageCategory = SoftwarePackageCategory.NONE
 
-    def update(
-        self,
-        *,
-        allow_copy: bool | None = None,
-        allow_paste: bool | None = None,
-        data_provider_ip_addresses: list[str] | None = None,
-        research_desktops: list[str] | None = None,
-        software_packages: SoftwarePackageCategory | None = None,
-        user_ip_addresses: list[str] | None = None,
-    ) -> None:
+    def set_research_desktops(self, research_desktops: list[str]) -> None:
+        if sorted(research_desktops) != sorted(self.research_desktops.keys()):
+            self.research_desktops.clear()
+            for idx, vm_sku in enumerate(research_desktops):
+                self.research_desktops[
+                    f"workspace-{idx:02d}"
+                ] = ConfigSubsectionResearchDesktopOpts(sku=vm_sku)
+
+    def summarise(self) -> None:
+        """Log a summary of this object"""
+        logger = LoggingSingleton()
         # Set data provider IP addresses
-        if data_provider_ip_addresses:
-            LoggingSingleton().debug(
-                f"[bold]IP addresses used by data providers[/] were previously [green]{self.data_provider_ip_addresses}[/]."
-            )
-            self.data_provider_ip_addresses = data_provider_ip_addresses
-        LoggingSingleton().info(
+        logger.info(
             f"[bold]IP addresses used by data providers[/] will be [green]{self.data_provider_ip_addresses}[/]."
         )
-        # Pass allow_copy and allow_paste to remote desktop
-        self.remote_desktop.update(allow_copy=allow_copy, allow_paste=allow_paste)
-        # Set research desktop SKUs
-        if research_desktops:
-            if sorted(research_desktops) != sorted(self.research_desktops.keys()):
-                LoggingSingleton().debug(
-                    f"[bold]Research desktops[/] were previously [green]{list(self.research_desktops.keys())}[/]."
-                )
-                self.research_desktops.clear()
-                for idx, vm_sku in enumerate(research_desktops):
-                    self.research_desktops[
-                        f"workspace-{idx:02d}"
-                    ] = ConfigSectionResearchDesktopOpts(sku=vm_sku)
+        # Get remote_desktop to self-summarise
+        self.remote_desktop.summarise()
+        # Get list of research desktop SKUs
         LoggingSingleton().info(
-            f"[bold]Research desktops[/] will be [green]{list(self.research_desktops.keys())}[/]."
+            f"[bold]Research desktops[/] will be [green]{[v.sku for v in self.research_desktops.values()]}[/]."
         )
         # Select which software packages can be installed by users
-        if software_packages:
-            LoggingSingleton().debug(
-                f"[bold]Software packages[/] from [green]{self.software_packages}[/] sources were previously installable."
-            )
-            self.software_packages = software_packages
         LoggingSingleton().info(
             f"[bold]Software packages[/] from [green]{self.software_packages}[/] sources will be installable."
         )
         # Set user IP addresses
-        if user_ip_addresses:
-            LoggingSingleton().debug(
-                f"[bold]IP addresses used by users[/] were previously [green]{self.research_user_ip_addresses}[/]."
-            )
-            self.research_user_ip_addresses = user_ip_addresses
         LoggingSingleton().info(
             f"[bold]IP addresses used by users[/] will be [green]{self.research_user_ip_addresses}[/]."
         )
+
+    def to_dict(self) -> dict[str, Any]:
+        self.validate()
+        return as_dict(chili.encode(self, encoders=encoders))
 
     def validate(self) -> None:
         """Validate input parameters"""
         try:
             for ip in self.data_provider_ip_addresses:
-                validate_ip_address(ip)
+                validate_ip_address(str(ip))
         except Exception as exc:
             msg = f"Invalid value for 'data_provider_ip_addresses' ({self.data_provider_ip_addresses}).\n{exc}"
             raise ValueError(msg) from exc
@@ -318,14 +291,10 @@ class ConfigSectionSRE:
             research_desktop.validate()
         try:
             for ip in self.research_user_ip_addresses:
-                validate_ip_address(ip)
+                validate_ip_address(str(ip))
         except Exception as exc:
             msg = f"Invalid value for 'research_user_ip_addresses' ({self.research_user_ip_addresses}).\n{exc}"
             raise ValueError(msg) from exc
-
-    def to_dict(self) -> dict[str, Any]:
-        self.validate()
-        return as_dict(chili.encode(self))
 
 
 @dataclass
@@ -335,15 +304,15 @@ class ConfigSectionTags:
     project: str = "Data Safe Haven"
     version: str = __version__
 
+    def to_dict(self) -> dict[str, str]:
+        self.validate()
+        return as_dict(chili.encode(self))
+
     def validate(self) -> None:
         """Validate input parameters"""
         if not self.deployment:
             msg = f"Invalid value for 'deployment' ({self.deployment})."
             raise ValueError(msg)
-
-    def to_dict(self) -> dict[str, str]:
-        self.validate()
-        return as_dict(chili.encode(self))
 
 
 class Config:
@@ -384,25 +353,28 @@ class Config:
             )
         # Attempt to decode each config section
         if yaml_input:
-            # type_decoders = {SelfValidatingAttribute[bool]: SelfValidatingBoolDecoder()}
-            # decoder = Decoder[Pet](decoders=type_decoders)
-
             if "azure" in yaml_input:
-                self.azure_ = chili.decode(yaml_input["azure"], ConfigSectionAzure)
+                self.azure_ = chili.decode(
+                    yaml_input["azure"], ConfigSectionAzure, decoders=decoders
+                )
             if "backend" in yaml_input:
                 self.backend_ = chili.decode(
-                    yaml_input["backend"], ConfigSectionBackend
+                    yaml_input["backend"], ConfigSectionBackend, decoders=decoders
                 )
             if "pulumi" in yaml_input:
-                self.pulumi_ = chili.decode(yaml_input["pulumi"], ConfigSectionPulumi)
+                self.pulumi_ = chili.decode(
+                    yaml_input["pulumi"], ConfigSectionPulumi, decoders=decoders
+                )
             if "shm" in yaml_input:
-                self.shm_ = chili.decode(yaml_input["shm"], ConfigSectionSHM)
+                self.shm_ = chili.decode(
+                    yaml_input["shm"], ConfigSectionSHM, decoders=decoders
+                )
             if "sre" in yaml_input:
                 for sre_name, sre_details in dict(yaml_input["sre"]).items():
                     self.sres[sre_name] = chili.decode(
                         sre_details,
                         ConfigSectionSRE,
-                        decoders={Validated[bool]: DecoderValidated[bool]()},
+                        decoders=decoders,
                     )
 
     @property
@@ -477,7 +449,7 @@ class Config:
     def sre(self, name: str) -> ConfigSectionSRE:
         """Return the config entry for this SRE creating it if it does not exist"""
         if name not in self.sres.keys():
-            highest_index = max([0] + [sre.index for sre in self.sres.values()])
+            highest_index = max([0] + [int(sre.index) for sre in self.sres.values()])
             self.sres[name].index = highest_index + 1
         return self.sres[name]
 
