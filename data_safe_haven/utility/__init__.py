@@ -1,14 +1,14 @@
 from .enums import SoftwarePackageCategory
 from .file_reader import FileReader
 from .logger import LoggingSingleton
+from .type_checked import DecoderTypeChecked, TypeChecked
 from .types import PathType
-from .validated import DecoderValidated, Validated
 
 __all__ = [
-    "DecoderValidated",
+    "DecoderTypeChecked",
     "FileReader",
     "LoggingSingleton",
     "PathType",
-    "Validated",
     "SoftwarePackageCategory",
+    "TypeChecked",
 ]
