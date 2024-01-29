@@ -1,4 +1,5 @@
 from .azuread_application import AzureADApplication, AzureADApplicationProps
+from .bcrypt_password import BcryptPassword, BcryptPasswordProps
 from .blob_container_acl import BlobContainerAcl, BlobContainerAclProps
 from .compiled_dsc import CompiledDsc, CompiledDscProps
 from .file_share_file import FileShareFile, FileShareFileProps
@@ -9,6 +10,8 @@ from .ssl_certificate import SSLCertificate, SSLCertificateProps
 __all__ = [
     "AzureADApplication",
     "AzureADApplicationProps",
+    "BcryptPassword",
+    "BcryptPasswordProps",
     "BlobContainerAcl",
     "BlobContainerAclProps",
     "CompiledDsc",

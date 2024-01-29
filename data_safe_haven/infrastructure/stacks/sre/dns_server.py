@@ -8,7 +8,6 @@ from pulumi_azure_native import containerinstance, network, resources
 from data_safe_haven.functions import (
     allowed_dns_lookups,
     b64encode,
-    bcrypt_encode,
     ordered_private_dns_zones,
 )
 from data_safe_haven.infrastructure.common import (
@@ -17,6 +16,7 @@ from data_safe_haven.infrastructure.common import (
     SREIpRanges,
     get_ip_address_from_container_group,
 )
+# from data_safe_haven.infrastructure.components import BcryptPassword, BcryptPasswordProps
 from data_safe_haven.resources import resources_path
 from data_safe_haven.utility import FileReader
 
@@ -66,10 +66,21 @@ class SREDnsServerComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Generate admin password
+        # Generate admin password: note that bcrypt will only use the first 72 bytes
         password_admin = pulumi_random.RandomPassword(
             f"{self._name}_password_admin", length=20, special=True, opts=child_opts
         )
+        # password_admin.result.apply(lambda s: print(f"password_admin.result {s}"))
+        # password_admin.bcrypt_hash.apply(lambda s: print(f"password_admin.bcrypt_hash {s}"))
+        # bcrypt_password = BcryptPassword(
+        #     f"{self._name}_bcrypt_password_admin",
+        #     BcryptPasswordProps(
+        #         password=password_admin.result,
+        #     )
+        # )
+        # bcrypt_password.salt.apply(lambda s: print(f"bcrypt_password.salt {s}"))
+        # bcrypt_password.password.apply(lambda s: print(f"bcrypt_password.password {s}"))
+        # bcrypt_password.encoded.apply(lambda s: print(f"bcrypt_password.encoded {s}"))
 
         # Read AdGuardHome setup files
         adguard_entrypoint_sh_reader = FileReader(
@@ -82,9 +93,10 @@ class SREDnsServerComponent(ComponentResource):
         # Expand AdGuardHome YAML configuration
         adguard_adguardhome_yaml_contents = Output.all(
             admin_username=props.admin_username,
-            admin_password_encrypted=Output.all(
-                password=password_admin.result, salt=props.admin_password_salt
-            ).apply(lambda kwargs: bcrypt_encode(kwargs["password"], kwargs["salt"])),
+            # admin_password_encrypted=Output.all(
+            #     password=password_admin.result, salt=props.admin_password_salt
+            # ).apply(lambda kwargs: bcrypt_encode(kwargs["password"], kwargs["salt"])),
+            admin_password_encrypted=password_admin.bcrypt_hash,
             # Use Azure virtual DNS server as upstream
             # https://learn.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16
             # This server is aware of private DNS zones

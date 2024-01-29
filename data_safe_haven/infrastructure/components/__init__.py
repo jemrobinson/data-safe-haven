@@ -14,6 +14,8 @@ from .composite import (
 from .dynamic import (
     AzureADApplication,
     AzureADApplicationProps,
+    BcryptPassword,
+    BcryptPasswordProps,
     BlobContainerAcl,
     BlobContainerAclProps,
     CompiledDsc,
@@ -37,6 +39,8 @@ __all__ = [
     "AutomationDscNodeProps",
     "AzureADApplication",
     "AzureADApplicationProps",
+    "BcryptPassword",
+    "BcryptPasswordProps",
     "BlobContainerAcl",
     "BlobContainerAclProps",
     "CompiledDsc",
