@@ -49,17 +49,26 @@ class SRENetworkingProps:
         self.subnet_guacamole_containers_iprange = subnet_ranges.apply(
             lambda s: s.guacamole_containers
         )
+        self.subnet_guacamole_containers_load_balancing_iprange = subnet_ranges.apply(
+            lambda s: s.guacamole_containers_load_balancing
+        )
         self.subnet_guacamole_containers_support_iprange = subnet_ranges.apply(
             lambda s: s.guacamole_containers_support
         )
         self.subnet_identity_containers_iprange = subnet_ranges.apply(
             lambda s: s.identity_containers
         )
+        self.subnet_identity_containers_load_balancing_iprange = subnet_ranges.apply(
+            lambda s: s.identity_containers_load_balancing
+        )
         self.subnet_identity_containers_support_iprange = subnet_ranges.apply(
             lambda s: s.identity_containers_support
         )
         self.subnet_user_services_containers_iprange = subnet_ranges.apply(
             lambda s: s.user_services_containers
+        )
+        self.subnet_user_services_containers_load_balancing_iprange = (
+            subnet_ranges.apply(lambda s: s.user_services_containers_load_balancing)
         )
         self.subnet_user_services_containers_support_iprange = subnet_ranges.apply(
             lambda s: s.user_services_containers_support
@@ -148,17 +157,32 @@ class SRENetworkingComponent(ComponentResource):
         subnet_guacamole_containers_prefix = (
             props.subnet_guacamole_containers_iprange.apply(lambda r: str(r))
         )
+        subnet_guacamole_containers_load_balancing_prefix = (
+            props.subnet_guacamole_containers_load_balancing_iprange.apply(
+                lambda r: str(r)
+            )
+        )
         subnet_guacamole_containers_support_prefix = (
             props.subnet_guacamole_containers_support_iprange.apply(lambda r: str(r))
         )
         subnet_identity_containers_prefix = (
             props.subnet_identity_containers_iprange.apply(lambda r: str(r))
         )
+        subnet_identity_containers_load_balancing_prefix = (
+            props.subnet_identity_containers_load_balancing_iprange.apply(
+                lambda r: str(r)
+            )
+        )
         subnet_identity_containers_support_prefix = (
             props.subnet_identity_containers_support_iprange.apply(lambda r: str(r))
         )
         subnet_user_services_containers_prefix = (
             props.subnet_user_services_containers_iprange.apply(lambda r: str(r))
+        )
+        subnet_user_services_containers_load_balancing_prefix = (
+            props.subnet_user_services_containers_load_balancing_iprange.apply(
+                lambda r: str(r)
+            )
         )
         subnet_user_services_containers_support_prefix = (
             props.subnet_user_services_containers_support_iprange.apply(
@@ -560,6 +584,17 @@ class SRENetworkingComponent(ComponentResource):
             opts=child_opts,
             tags=child_tags,
         )
+        nsg_guacamole_containers_load_balancing = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_guacamole_containers_load_balancing",
+            network_security_group_name=f"{stack_name}-nsg-guacamole-containers-load-balancing",
+            resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
+                # Outbound
+            ],
+            opts=child_opts,
+            tags=child_tags,
+        )
         nsg_guacamole_containers_support = network.NetworkSecurityGroup(
             f"{self._name}_nsg_guacamole_containers_support",
             network_security_group_name=f"{stack_name}-nsg-guacamole-containers-support",
@@ -661,6 +696,17 @@ class SRENetworkingComponent(ComponentResource):
                     source_address_prefix=subnet_workspaces_prefix,
                     source_port_range="*",
                 ),
+                # Outbound
+            ],
+            opts=child_opts,
+            tags=child_tags,
+        )
+        nsg_identity_containers_load_balancing = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_identity_containers_load_balancing",
+            network_security_group_name=f"{stack_name}-nsg-identity-containers-load-balancing",
+            resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
                 # Outbound
             ],
             opts=child_opts,
@@ -780,6 +826,17 @@ class SRENetworkingComponent(ComponentResource):
                     source_address_prefix="*",
                     source_port_range="*",
                 ),
+            ],
+            opts=child_opts,
+            tags=child_tags,
+        )
+        nsg_user_services_containers_load_balancing = network.NetworkSecurityGroup(
+            f"{self._name}_nsg_user_services_containers_load_balancing",
+            network_security_group_name=f"{stack_name}-nsg-user-services-containers-load-balancing",
+            resource_group_name=resource_group.name,
+            security_rules=[
+                # Inbound
+                # Outbound
             ],
             opts=child_opts,
             tags=child_tags,
@@ -1194,10 +1251,19 @@ class SRENetworkingComponent(ComponentResource):
         subnet_data_configuration_name = "DataConfigurationSubnet"
         subnet_data_private_name = "DataPrivateSubnet"
         subnet_guacamole_containers_name = "GuacamoleContainersSubnet"
+        subnet_guacamole_containers_load_balancing_name = (
+            "GuacamoleContainersLoadBalancingSubnet"
+        )
         subnet_guacamole_containers_support_name = "GuacamoleContainersSupportSubnet"
         subnet_identity_containers_name = "IdentityContainersSubnet"
+        subnet_identity_containers_load_balancing_name = (
+            "IdentityContainersLoadBalancingSubnet"
+        )
         subnet_identity_containers_support_name = "IdentityContainersSupportSubnet"
         subnet_user_services_containers_name = "UserServicesContainersSubnet"
+        subnet_user_services_containers_load_balancing_name = (
+            "UserServicesContainersLoadBalancingSubnet"
+        )
         subnet_user_services_containers_support_name = (
             "UserServicesContainersSupportSubnet"
         )
@@ -1270,6 +1336,16 @@ class SRENetworkingComponent(ComponentResource):
                     ),
                     route_table=network.RouteTableArgs(id=route_table.id),
                 ),
+                # Guacamole containers load balancing
+                network.SubnetArgs(
+                    address_prefix=subnet_guacamole_containers_load_balancing_prefix,
+                    delegations=[],
+                    name=subnet_guacamole_containers_load_balancing_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_guacamole_containers_load_balancing.id
+                    ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
+                ),
                 # Guacamole containers support
                 network.SubnetArgs(
                     address_prefix=subnet_guacamole_containers_support_prefix,
@@ -1296,6 +1372,16 @@ class SRENetworkingComponent(ComponentResource):
                     ),
                     route_table=network.RouteTableArgs(id=route_table.id),
                 ),
+                # Identity containers load balancing
+                network.SubnetArgs(
+                    address_prefix=subnet_identity_containers_load_balancing_prefix,
+                    delegations=[],
+                    name=subnet_identity_containers_load_balancing_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_identity_containers_load_balancing.id
+                    ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
+                ),
                 # Identity containers support
                 network.SubnetArgs(
                     address_prefix=subnet_identity_containers_support_prefix,
@@ -1319,6 +1405,16 @@ class SRENetworkingComponent(ComponentResource):
                     name=subnet_user_services_containers_name,
                     network_security_group=network.NetworkSecurityGroupArgs(
                         id=nsg_user_services_containers.id
+                    ),
+                    route_table=network.RouteTableArgs(id=route_table.id),
+                ),
+                # User services containers load balancing
+                network.SubnetArgs(
+                    address_prefix=subnet_user_services_containers_load_balancing_prefix,
+                    delegations=[],
+                    name=subnet_user_services_containers_load_balancing_name,
+                    network_security_group=network.NetworkSecurityGroupArgs(
+                        id=nsg_user_services_containers_load_balancing.id
                     ),
                     route_table=network.RouteTableArgs(id=route_table.id),
                 ),
@@ -1566,6 +1662,11 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
+        self.subnet_guacamole_containers_load_balancing = network.get_subnet_output(
+            subnet_name=subnet_guacamole_containers_load_balancing_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
         self.subnet_guacamole_containers_support = network.get_subnet_output(
             subnet_name=subnet_guacamole_containers_support_name,
             resource_group_name=resource_group.name,
@@ -1573,6 +1674,11 @@ class SRENetworkingComponent(ComponentResource):
         )
         self.subnet_identity_containers = network.get_subnet_output(
             subnet_name=subnet_identity_containers_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_identity_containers_load_balancing = network.get_subnet_output(
+            subnet_name=subnet_identity_containers_load_balancing_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
@@ -1588,6 +1694,11 @@ class SRENetworkingComponent(ComponentResource):
         )
         self.subnet_user_services_containers = network.get_subnet_output(
             subnet_name=subnet_user_services_containers_name,
+            resource_group_name=resource_group.name,
+            virtual_network_name=sre_virtual_network.name,
+        )
+        self.subnet_user_services_containers_load_balancing = network.get_subnet_output(
+            subnet_name=subnet_user_services_containers_load_balancing_name,
             resource_group_name=resource_group.name,
             virtual_network_name=sre_virtual_network.name,
         )
