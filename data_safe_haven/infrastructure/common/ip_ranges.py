@@ -19,7 +19,6 @@ class SREIpRanges:
         self.guacamole_containers_support = self.vnet.next_subnet(8)
         self.identity_containers = self.vnet.next_subnet(8)
         self.identity_containers_load_balancing = self.vnet.next_subnet(8)
-        self.identity_containers_support = self.vnet.next_subnet(8)
         self.user_services_containers = self.vnet.next_subnet(8)
         self.user_services_containers_load_balancing = self.vnet.next_subnet(8)
         self.user_services_containers_support = self.vnet.next_subnet(8)
