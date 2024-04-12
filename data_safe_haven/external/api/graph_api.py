@@ -723,6 +723,8 @@ class GraphApi:
                 f"Assigning delegated role '[green]{application_role_name}[/]' to '{application_name}'...",
             )
             # If there are existing permissions then we need to patch
+            # This code will retrieve the first application with clientId == application_sp["id"]
+            # If there is not one, it will return None
             application = next(
                 (
                     app
