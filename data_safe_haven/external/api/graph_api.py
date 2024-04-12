@@ -237,9 +237,9 @@ class GraphApi:
             # Grant admin consent for the requested scopes
             if application_scopes or delegated_scopes:
                 for scope in application_scopes:
-                    self.grant_application_role_permissions(application_name, scope)
+                    self.assign_application_role(application_name, scope)
                 for scope in delegated_scopes:
-                    self.grant_delegated_role_permissions(application_name, scope)
+                    self.assign_delegated_role(application_name, scope)
                 attempts = 0
                 max_attempts = 5
                 while attempts < max_attempts:
@@ -606,7 +606,7 @@ class GraphApi:
         except (DataSafeHavenMicrosoftGraphError, StopIteration):
             return None
 
-    def grant_role_permissions(
+    def assign_roles(
         self,
         application_name: str,
         *,
@@ -614,7 +614,8 @@ class GraphApi:
         delegated_role_assignments: Sequence[str],
     ) -> None:
         """
-        Grant roles to the service principal associated with an application and give admin approval to these roles
+        1. Assign roles to the service principal associated with an application.
+        2. Give admin approval to these roles.
 
         These can be either application or delegated roles.
 
@@ -631,13 +632,13 @@ class GraphApi:
 
         # Grant any requested application role permissions
         for role_name in application_role_assignments:
-            self.grant_application_role_permissions(application_name, role_name)
+            self.assign_application_role(application_name, role_name)
 
         # Grant any requested delegated role permissions
         for role_name in delegated_role_assignments:
-            self.grant_delegated_role_permissions(application_name, role_name)
+            self.assign_delegated_role(application_name, role_name)
 
-    def grant_application_role_permissions(
+    def assign_application_role(
         self, application_name: str, application_role_name: str
     ) -> None:
         """
@@ -693,7 +694,7 @@ class GraphApi:
             msg = f"Could not assign application role '{application_role_name}' to application '{application_name}'.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
-    def grant_delegated_role_permissions(
+    def assign_delegated_role(
         self, application_name: str, application_role_name: str
     ) -> None:
         """

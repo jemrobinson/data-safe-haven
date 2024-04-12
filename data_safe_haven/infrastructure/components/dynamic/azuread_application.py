@@ -49,8 +49,8 @@ class AzureADApplicationProvider(DshResourceProvider):
                     outs["object_id"] = json_response["id"]
                     outs["application_id"] = json_response["appId"]
 
-                # Ensure that requested role permissions have been granted
-                graph_api.grant_role_permissions(
+                # Ensure that requested roles have been assigned
+                graph_api.assign_roles(
                     outs["application_name"],
                     application_role_assignments=props.get(
                         "application_role_assignments", []
@@ -93,8 +93,8 @@ class AzureADApplicationProvider(DshResourceProvider):
             outs["object_id"] = json_response["id"]
             outs["application_id"] = json_response["appId"]
 
-            # Grant requested role permissions
-            graph_api.grant_role_permissions(
+            # Ensure that requested roles have been assigned
+            graph_api.assign_roles(
                 outs["application_name"],
                 application_role_assignments=props.get(
                     "application_role_assignments", []
