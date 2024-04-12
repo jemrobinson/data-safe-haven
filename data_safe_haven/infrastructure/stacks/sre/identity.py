@@ -6,6 +6,8 @@ from pulumi import ComponentResource, Input, Output, ResourceOptions
 from pulumi_azure_native import containerinstance, network, resources, storage
 
 from data_safe_haven.infrastructure.common import (
+    get_available_ips_from_subnet,
+    get_id_from_subnet,
     get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
@@ -28,6 +30,7 @@ class SREIdentityProps:
         storage_account_name: Input[str],
         storage_account_resource_group_name: Input[str],
         subnet_containers: Input[network.GetSubnetResult],
+        subnet_containers_load_balancing: Input[network.GetSubnetResult],
     ) -> None:
         self.aad_application_name = aad_application_name
         self.aad_auth_token = aad_auth_token
@@ -37,9 +40,10 @@ class SREIdentityProps:
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group_name = storage_account_resource_group_name
-        self.subnet_containers_id = Output.from_input(subnet_containers).apply(
-            lambda s: str(s.id)
-        )
+        self.subnet_containers_id = Output.from_input(subnet_containers).apply(get_id_from_subnet)
+        self.subnet_containers_ip_addresses = Output.from_input(subnet_containers).apply(get_available_ips_from_subnet)
+        self.subnet_containers_load_balancing_id = Output.from_input(subnet_containers_load_balancing).apply(get_id_from_subnet)
+        self.subnet_containers_load_balancing_ip_addresses = Output.from_input(subnet_containers_load_balancing).apply(get_available_ips_from_subnet)
 
 
 class SREIdentityComponent(ComponentResource):
@@ -216,6 +220,69 @@ class SREIdentityComponent(ComponentResource):
                     delete_before_replace=True,
                     replace_on_changes=["containers"],
                 ),
+            ),
+            tags=child_tags,
+        )
+
+        props.subnet_containers_load_balancing_ip_addresses.apply(lambda ips: print(f"Static IP: {ips[0]}"))
+        network.LoadBalancer(
+            f"{self._name}_load_balancer",
+            backend_address_pools=[
+                network.BackendAddressPoolArgs(
+                    load_balancer_backend_addresses=props.subnet_containers_ip_addresses.apply(
+                        lambda ip_addresses: [
+                            network.LoadBalancerBackendAddressArgs(
+                                # admin_state: Optional[pulumi.Input[Union[str, 'LoadBalancerBackendAddressAdminState']]] = None,
+                                ip_address=ip_address,
+                                # load_balancer_frontend_ip_configuration: Optional[pulumi.Input['SubResourceArgs']] = None,
+                                name=f"backend-ip-{idx}",
+                                # subnet: Optional[pulumi.Input['SubResourceArgs']] = None,
+                                # virtual_network: Optional[pulumi.Input['SubResourceArgs']] = None):
+                            )
+                            for idx, ip_address in enumerate(ip_addresses)
+                        ],
+                    ),
+                    # drain_period_in_seconds: Optional[pulumi.Input[int]] = None,
+                    # id: Optional[pulumi.Input[str]] = None,
+                    # load_balancer_backend_addresses: Optional[pulumi.Input[Sequence[pulumi.Input['LoadBalancerBackendAddressArgs']]]] = None,
+                    # location: Optional[pulumi.Input[str]] = None,
+                    name=f"{stack_name}-load-balancer-backend-identity",
+                    # tunnel_interfaces: Optional[pulumi.Input[Sequence[pulumi.Input['GatewayLoadBalancerTunnelInterfaceArgs']]]] = None,
+                    # virtual_network: Optional[pulumi.Input['SubResourceArgs']] = None):
+                ),
+            ],
+            frontend_ip_configurations=[
+                network.FrontendIPConfigurationArgs(
+                    # gateway_load_balancer: Optional[pulumi.Input['SubResourceArgs']] = None,
+                    # id: Optional[pulumi.Input[str]] = None,
+                    # name: Optional[pulumi.Input[str]] = None,
+                    name=f"{stack_name}-load-balancer-frontend-identity",
+                    private_ip_address="10.6.1.52",
+                    private_ip_address_version=network.IPVersion.I_PV4,
+                    private_ip_allocation_method=network.IPAllocationMethod.STATIC,
+                    # public_ip_address: Optional[pulumi.Input['PublicIPAddressArgs']] = None,
+                    # public_ip_prefix: Optional[pulumi.Input['SubResourceArgs']] = None,
+                    subnet=network.SubnetArgs(id=props.subnet_containers_load_balancing_id), #: Optional[pulumi.Input['SubnetArgs']] = None,
+                    # zones: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None):
+                )
+            ],
+            load_balancer_name=f"{stack_name}-load-balancer-identity",
+            location=props.location,
+            resource_group_name=resource_group.name,
+            sku=network.LoadBalancerSkuArgs(
+                name=network.LoadBalancerSkuName.STANDARD,
+                tier=network.LoadBalancerSkuTier.REGIONAL,
+            ),
+            # Input[Sequence[Input[Unknown]]] | None = None,
+            # extended_location: Input[Unknown] | None = None,
+            # id: Input[str] | None = None,
+            # inbound_nat_pools: Input[Sequence[Input[Unknown]]] | None = None,
+            # inbound_nat_rules: Input[Sequence[Input[Unknown]]] | None = None,
+            # load_balancing_rules: Input[Sequence[Input[Unknown]]] | None = None,
+            # outbound_rules: Input[Sequence[Input[Unknown]]] | None = None,
+            # probes: Input[Sequence[Input[Unknown]]] | None = None,
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=container_group)
             ),
             tags=child_tags,
         )
