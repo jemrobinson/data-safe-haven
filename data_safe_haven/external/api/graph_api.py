@@ -655,7 +655,7 @@ class GraphApi:
             # Get service principals for Microsoft Graph and this application
             microsoft_graph_sp = self.get_service_principal_by_name("Microsoft Graph")
             if not microsoft_graph_sp:
-                msg = "Could not find Microsoft Graph service principal."
+                msg = "Unable to find Microsoft Graph service principal. This is likely to be a problem with your AzureAD setup."
                 raise DataSafeHavenMicrosoftGraphError(msg)
             application_sp = self.get_service_principal_by_name(application_name)
             if not application_sp:
