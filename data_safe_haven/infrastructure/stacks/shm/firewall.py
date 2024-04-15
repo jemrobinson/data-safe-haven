@@ -100,7 +100,7 @@ class SHMFirewallComponent(ComponentResource):
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
                     name=f"{stack_name}-any",
-                    priority=1010,
+                    priority=1000,
                     rules=[
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external Azure Automation requests",
@@ -133,7 +133,7 @@ class SHMFirewallComponent(ComponentResource):
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
                     name=f"{stack_name}-update-servers",
-                    priority=1020,
+                    priority=1100,
                     rules=[
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external Linux update requests",
@@ -169,7 +169,7 @@ class SHMFirewallComponent(ComponentResource):
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
                     name=f"{stack_name}-sre-identity-servers",
-                    priority=1100,
+                    priority=1200,
                     rules=[
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external OAuth login requests",
@@ -191,7 +191,7 @@ class SHMFirewallComponent(ComponentResource):
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
                     name=f"{stack_name}-sre-package-repositories",
-                    priority=1110,
+                    priority=1210,
                     rules=[
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external CRAN package requests",
@@ -222,7 +222,7 @@ class SHMFirewallComponent(ComponentResource):
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
                     name=f"{stack_name}-sre-remote-desktop-gateways",
-                    priority=1120,
+                    priority=1220,
                     rules=[
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external OAuth login requests",
@@ -241,7 +241,7 @@ class SHMFirewallComponent(ComponentResource):
                 network.AzureFirewallApplicationRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
                     name=f"{stack_name}-sre-workspaces",
-                    priority=1130,
+                    priority=1230,
                     rules=[
                         network.AzureFirewallApplicationRuleArgs(
                             description="Allow external Linux ClamAV update requests",
@@ -293,7 +293,7 @@ class SHMFirewallComponent(ComponentResource):
                 network.AzureFirewallNetworkRuleCollectionArgs(
                     action=network.AzureFirewallRCActionArgs(type="Allow"),
                     name=f"{stack_name}-all",
-                    priority=1010,
+                    priority=1000,
                     rules=[
                         network.AzureFirewallNetworkRuleArgs(
                             description="Allow external Azure Automation requests",
