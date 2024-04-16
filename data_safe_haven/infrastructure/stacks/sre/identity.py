@@ -7,7 +7,9 @@ from pulumi_azure_native import containerinstance, network, resources, storage
 
 from data_safe_haven.infrastructure.common import (
     get_available_ips_from_subnet,
+    get_id_from_rg,
     get_id_from_subnet,
+    get_id_from_vnet,
     get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
@@ -31,6 +33,7 @@ class SREIdentityProps:
         storage_account_resource_group_name: Input[str],
         subnet_containers: Input[network.GetSubnetResult],
         subnet_containers_load_balancing: Input[network.GetSubnetResult],
+        virtual_network: Input[network.VirtualNetwork],
     ) -> None:
         self.aad_application_name = aad_application_name
         self.aad_auth_token = aad_auth_token
@@ -44,6 +47,7 @@ class SREIdentityProps:
         self.subnet_containers_ip_addresses = Output.from_input(subnet_containers).apply(get_available_ips_from_subnet)
         self.subnet_containers_load_balancing_id = Output.from_input(subnet_containers_load_balancing).apply(get_id_from_subnet)
         self.subnet_containers_load_balancing_ip_addresses = Output.from_input(subnet_containers_load_balancing).apply(get_available_ips_from_subnet)
+        self.virtual_network_id = Output.from_input(virtual_network).apply(get_id_from_vnet)
 
 
 class SREIdentityComponent(ComponentResource):
@@ -72,6 +76,7 @@ class SREIdentityComponent(ComponentResource):
             opts=child_opts,
             tags=child_tags,
         )
+        resource_group_id = get_id_from_rg(resource_group)
 
         # Define configuration file shares
         file_share_redis = storage.FileShare(
@@ -225,6 +230,7 @@ class SREIdentityComponent(ComponentResource):
         )
 
         props.subnet_containers_load_balancing_ip_addresses.apply(lambda ips: print(f"Static IP: {ips[0]}"))
+        load_balancer_name = f"{stack_name}-load-balancer-identity"
         network.LoadBalancer(
             f"{self._name}_load_balancer",
             backend_address_pools=[
@@ -236,8 +242,8 @@ class SREIdentityComponent(ComponentResource):
                                 ip_address=ip_address,
                                 # load_balancer_frontend_ip_configuration: Optional[pulumi.Input['SubResourceArgs']] = None,
                                 name=f"backend-ip-{idx}",
-                                # subnet: Optional[pulumi.Input['SubResourceArgs']] = None,
-                                # virtual_network: Optional[pulumi.Input['SubResourceArgs']] = None):
+                                subnet=network.SubResourceArgs(id=props.subnet_containers_id),
+                                virtual_network=network.SubResourceArgs(id=props.virtual_network_id),
                             )
                             for idx, ip_address in enumerate(ip_addresses)
                         ],
@@ -246,7 +252,7 @@ class SREIdentityComponent(ComponentResource):
                     # id: Optional[pulumi.Input[str]] = None,
                     # load_balancer_backend_addresses: Optional[pulumi.Input[Sequence[pulumi.Input['LoadBalancerBackendAddressArgs']]]] = None,
                     # location: Optional[pulumi.Input[str]] = None,
-                    name=f"{stack_name}-load-balancer-backend-identity",
+                    name=f"{load_balancer_name}-backend",
                     # tunnel_interfaces: Optional[pulumi.Input[Sequence[pulumi.Input['GatewayLoadBalancerTunnelInterfaceArgs']]]] = None,
                     # virtual_network: Optional[pulumi.Input['SubResourceArgs']] = None):
                 ),
@@ -256,7 +262,7 @@ class SREIdentityComponent(ComponentResource):
                     # gateway_load_balancer: Optional[pulumi.Input['SubResourceArgs']] = None,
                     # id: Optional[pulumi.Input[str]] = None,
                     # name: Optional[pulumi.Input[str]] = None,
-                    name=f"{stack_name}-load-balancer-frontend-identity",
+                    name=f"{load_balancer_name}-frontend",
                     private_ip_address="10.6.1.52",
                     private_ip_address_version=network.IPVersion.I_PV4,
                     private_ip_allocation_method=network.IPAllocationMethod.STATIC,
@@ -266,8 +272,39 @@ class SREIdentityComponent(ComponentResource):
                     # zones: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None):
                 )
             ],
-            load_balancer_name=f"{stack_name}-load-balancer-identity",
+            load_balancer_name=load_balancer_name,
+            load_balancing_rules=[
+                network.LoadBalancingRuleArgs(
+                    backend_address_pool=network.SubResourceArgs(
+                        id=Output.concat(resource_group_id, "/providers/Microsoft.Network/loadBalancers/", load_balancer_name, "/backendAddressPools/", load_balancer_name, "-backend"),
+                    ),
+                    backend_port=1389,
+                    # enable_floating_ip=True,
+                    # enable_tcp_reset=False,
+                    frontend_ip_configuration=network.SubResourceArgs(
+                        id=Output.concat(resource_group_id, "/providers/Microsoft.Network/loadBalancers/", load_balancer_name, "/frontendIPConfigurations/", load_balancer_name, "-frontend"),
+                    ),
+                    frontend_port=1389,
+                    idle_timeout_in_minutes=15,
+                    load_distribution=network.LoadDistribution.DEFAULT,
+                    name=f"{load_balancer_name}-rule",
+                    probe=network.SubResourceArgs(
+                        id=Output.concat(resource_group_id, "/providers/Microsoft.Network/loadBalancers/", load_balancer_name, "/probes/", load_balancer_name, "-probe"),
+                    ),
+                    protocol=network.TransportProtocol.TCP,
+                )
+            ],
             location=props.location,
+            probes=[
+                network.ProbeArgs(
+                    interval_in_seconds=30,
+                    name=f"{load_balancer_name}-probe",
+                    number_of_probes=2,
+                    port=1389,
+                    probe_threshold=1,
+                    protocol=network.ProbeProtocol.TCP,
+                )
+            ],
             resource_group_name=resource_group.name,
             sku=network.LoadBalancerSkuArgs(
                 name=network.LoadBalancerSkuName.STANDARD,
@@ -280,7 +317,6 @@ class SREIdentityComponent(ComponentResource):
             # inbound_nat_rules: Input[Sequence[Input[Unknown]]] | None = None,
             # load_balancing_rules: Input[Sequence[Input[Unknown]]] | None = None,
             # outbound_rules: Input[Sequence[Input[Unknown]]] | None = None,
-            # probes: Input[Sequence[Input[Unknown]]] | None = None,
             opts=ResourceOptions.merge(
                 child_opts, ResourceOptions(parent=container_group)
             ),

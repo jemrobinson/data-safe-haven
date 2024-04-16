@@ -215,6 +215,7 @@ class DeclarativeSRE:
                 storage_account_resource_group_name=data.resource_group_name,
                 subnet_containers=networking.subnet_identity_containers,
                 subnet_containers_load_balancing=networking.subnet_identity_containers_load_balancing,
+                virtual_network=networking.virtual_network,
             ),
         )
 
