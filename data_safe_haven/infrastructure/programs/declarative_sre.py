@@ -39,6 +39,10 @@ from .sre.remote_desktop import (
     SRERemoteDesktopComponent,
     SRERemoteDesktopProps,
 )
+from .sre.traffic_filter import (
+    SRETrafficFilterComponent,
+    SRETrafficFilterProps,
+)
 from .sre.user_services import (
     SREUserServicesComponent,
     SREUserServicesProps,
@@ -165,6 +169,16 @@ class DeclarativeSRE:
                 ).research_user_ip_addresses,
             ),
             tags=self.tags,
+        )
+
+        # Deploy traffic filter
+        SRETrafficFilterComponent(
+            "sre_traffic_filter",
+            self.stack_name,
+            SRETrafficFilterProps(
+                location=self.cfg.azure.location,
+            ),
+            tags=self.cfg.tags.model_dump(),
         )
 
         # Deploy automated monitoring
