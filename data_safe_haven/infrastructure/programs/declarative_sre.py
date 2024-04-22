@@ -177,6 +177,7 @@ class DeclarativeSRE:
             self.stack_name,
             SRETrafficFilterProps(
                 location=self.cfg.azure.location,
+                subnet=networking.subnet_traffic_filter,
             ),
             tags=self.cfg.tags.model_dump(),
         )
