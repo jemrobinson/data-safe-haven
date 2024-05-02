@@ -171,17 +171,6 @@ class DeclarativeSRE:
             tags=self.tags,
         )
 
-        # Deploy traffic filter
-        SRETrafficFilterComponent(
-            "sre_traffic_filter",
-            self.stack_name,
-            SRETrafficFilterProps(
-                location=self.cfg.azure.location,
-                subnet=networking.subnet_traffic_filter,
-            ),
-            tags=self.cfg.tags.model_dump(),
-        )
-
         # Deploy automated monitoring
         SREMonitoringComponent(
             "sre_monitoring",
@@ -243,6 +232,21 @@ class DeclarativeSRE:
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
                 storage_account_resource_group_name=data.resource_group_name,
+            ),
+            tags=self.tags,
+        )
+
+        # Deploy traffic filter
+        SRETrafficFilterComponent(
+            "sre_traffic_filter",
+            self.stack_name,
+            SRETrafficFilterProps(
+                location=self.context.location,
+                sre_index=self.cfg.sre(self.sre_name).index,
+                storage_account_key=data.storage_account_data_configuration_key,
+                storage_account_name=data.storage_account_data_configuration_name,
+                storage_account_resource_group_name=data.resource_group_name,
+                subnet=networking.subnet_traffic_filter,
             ),
             tags=self.tags,
         )

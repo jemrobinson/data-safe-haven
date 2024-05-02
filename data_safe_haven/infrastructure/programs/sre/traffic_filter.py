@@ -2,12 +2,19 @@
 
 from collections.abc import Mapping
 
-from pulumi import ComponentResource, Input, ResourceOptions
-from pulumi_azure_native import containerinstance, network, resources
+from pulumi import ComponentResource, Input, Output, ResourceOptions
+from pulumi_azure_native import containerinstance, network, resources, storage
 
 from data_safe_haven.infrastructure.common import (
+    SREIpRanges,
     get_id_from_subnet,
 )
+from data_safe_haven.infrastructure.components import (
+    FileShareFile,
+    FileShareFileProps,
+)
+from data_safe_haven.resources import resources_path
+from data_safe_haven.utility import FileReader
 
 
 class SRETrafficFilterProps:
@@ -16,10 +23,19 @@ class SRETrafficFilterProps:
     def __init__(
         self,
         location: Input[str],
+        sre_index: Input[int],
+        storage_account_key: Input[str],
+        storage_account_name: Input[str],
+        storage_account_resource_group_name: Input[str],
         subnet: Input[network.GetSubnetResult],
     ) -> None:
+        subnet_ranges = Output.from_input(sre_index).apply(lambda idx: SREIpRanges(idx))
         self.location = location
+        self.storage_account_key = storage_account_key
+        self.storage_account_name = storage_account_name
+        self.storage_account_resource_group_name = storage_account_resource_group_name
         self.subnet_id = subnet.apply(get_id_from_subnet)
+        self.iprange_all = subnet_ranges.apply(lambda s: s.vnet)
 
 
 class SRETrafficFilterComponent(ComponentResource):
@@ -46,6 +62,54 @@ class SRETrafficFilterComponent(ComponentResource):
             tags=child_tags,
         )
 
+        # Define configuration file share
+        file_share = storage.FileShare(
+            f"{self._name}_file_share",
+            access_tier="TransactionOptimized",
+            account_name=props.storage_account_name,
+            resource_group_name=props.storage_account_resource_group_name,
+            share_name="traffic-filter-squid",
+            share_quota=1,
+            signed_identifiers=[],
+            opts=child_opts,
+        )
+
+        # Overwrite Squid config file
+        squid_conf_reader = FileReader(resources_path / "traffic_filter" / "squid.mustache.conf")
+        FileShareFile(
+            f"{self._name}_file_share_squid_conf",
+            FileShareFileProps(
+                destination_path=squid_conf_reader.name,
+                file_contents=Output.all(
+                    iprange_all=props.iprange_all,
+                ).apply(
+                    lambda mustache_values: squid_conf_reader.file_contents(
+                        mustache_values
+                    )
+                ),
+                share_name=file_share.name,
+                storage_account_key=props.storage_account_key,
+                storage_account_name=props.storage_account_name,
+            ),
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=file_share)),
+        )
+
+        # Upload Squid allowlists
+        sre_all_allowlist_reader = FileReader(
+            resources_path / "traffic_filter" / "sre_all.allowlist"
+        )
+        FileShareFile(
+            f"{self._name}_file_share_sre_all_allowlist",
+            FileShareFileProps(
+                destination_path=sre_all_allowlist_reader.name,
+                file_contents=sre_all_allowlist_reader.file_contents(),
+                share_name=file_share.name,
+                storage_account_key=props.storage_account_key,
+                storage_account_name=props.storage_account_name,
+            ),
+            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=file_share)),
+        )
+
         # Define a container group with Squid
         containerinstance.ContainerGroup(
             f"{self._name}_container_group_traffic_filter",
@@ -62,10 +126,17 @@ class SRETrafficFilterComponent(ComponentResource):
                     ],
                     resources=containerinstance.ResourceRequirementsArgs(
                         requests=containerinstance.ResourceRequestsArgs(
-                            cpu=0.5,
-                            memory_in_gb=0.5,
+                            cpu=1,
+                            memory_in_gb=1,
                         ),
                     ),
+                    volume_mounts=[
+                        containerinstance.VolumeMountArgs(
+                            mount_path="/etc/squid/",
+                            name="squid-etc-squid-custom",
+                            read_only=True,
+                        ),
+                    ],
                 ),
             ],
             ip_address=containerinstance.IpAddressArgs(
@@ -84,7 +155,16 @@ class SRETrafficFilterComponent(ComponentResource):
             subnet_ids=[
                 containerinstance.ContainerGroupSubnetIdArgs(id=props.subnet_id)
             ],
-            volumes=[],
+            volumes=[
+                containerinstance.VolumeArgs(
+                    azure_file=containerinstance.AzureFileVolumeArgs(
+                        share_name=file_share.name,
+                        storage_account_key=props.storage_account_key,
+                        storage_account_name=props.storage_account_name,
+                    ),
+                    name="squid-etc-squid-custom",
+                ),
+            ],
             opts=ResourceOptions.merge(
                 child_opts,
                 ResourceOptions(
