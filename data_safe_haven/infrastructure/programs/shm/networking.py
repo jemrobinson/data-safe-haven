@@ -71,7 +71,7 @@ class SHMNetworkingComponent(ComponentResource):
             f"{self._name}_route_table",
             location=props.location,
             resource_group_name=resource_group.name,
-            route_table_name=f"{stack_name}-route",
+            route_table_name=f"{stack_name}-route-table",
             routes=[],
             opts=ResourceOptions.merge(
                 child_opts,

@@ -171,27 +171,6 @@ class DeclarativeSRE:
             tags=self.tags,
         )
 
-        # Deploy automated monitoring
-        SREMonitoringComponent(
-            "sre_monitoring",
-            self.stack_name,
-            SREMonitoringProps(
-                automation_account_name=self.pulumi_opts.require(
-                    "shm-monitoring-automation_account_name"
-                ),
-                location=self.context.location,
-                subscription_resource_id=get_subscription_id_from_rg(
-                    dns.resource_group
-                ),
-                resource_group_name=self.pulumi_opts.require(
-                    "shm-monitoring-resource_group_name"
-                ),
-                sre_index=self.cfg.sre(self.sre_name).index,
-                timezone=self.cfg.shm.timezone,
-            ),
-            tags=self.tags,
-        )
-
         # Deploy data storage
         data = SREDataComponent(
             "sre_data",
@@ -218,6 +197,44 @@ class DeclarativeSRE:
             tags=self.tags,
         )
 
+        # Deploy traffic filter
+        SRETrafficFilterComponent(
+            "sre_traffic_filter",
+            self.stack_name,
+            SRETrafficFilterProps(
+                location=self.context.location,
+                route_table_name=networking.route_table_name,
+                route_table_resource_group_name=networking.resource_group.name,
+                sre_index=self.cfg.sre(self.sre_name).index,
+                storage_account_key=data.storage_account_data_configuration_key,
+                storage_account_name=data.storage_account_data_configuration_name,
+                storage_account_resource_group_name=data.resource_group_name,
+                subnet=networking.subnet_traffic_filter,
+            ),
+            tags=self.tags,
+        )
+
+        # Deploy automated monitoring
+        SREMonitoringComponent(
+            "sre_monitoring",
+            self.stack_name,
+            SREMonitoringProps(
+                automation_account_name=self.pulumi_opts.require(
+                    "shm-monitoring-automation_account_name"
+                ),
+                location=self.context.location,
+                subscription_resource_id=get_subscription_id_from_rg(
+                    dns.resource_group
+                ),
+                resource_group_name=self.pulumi_opts.require(
+                    "shm-monitoring-resource_group_name"
+                ),
+                sre_index=self.cfg.sre(self.sre_name).index,
+                timezone=self.cfg.shm.timezone,
+            ),
+            tags=self.tags,
+        )
+
         # Deploy the apt proxy server
         apt_proxy_server = SREAptProxyServerComponent(
             "sre_apt_proxy_server",
@@ -232,21 +249,6 @@ class DeclarativeSRE:
                 storage_account_key=data.storage_account_data_configuration_key,
                 storage_account_name=data.storage_account_data_configuration_name,
                 storage_account_resource_group_name=data.resource_group_name,
-            ),
-            tags=self.tags,
-        )
-
-        # Deploy traffic filter
-        SRETrafficFilterComponent(
-            "sre_traffic_filter",
-            self.stack_name,
-            SRETrafficFilterProps(
-                location=self.context.location,
-                sre_index=self.cfg.sre(self.sre_name).index,
-                storage_account_key=data.storage_account_data_configuration_key,
-                storage_account_name=data.storage_account_data_configuration_name,
-                storage_account_resource_group_name=data.resource_group_name,
-                subnet=networking.subnet_traffic_filter,
             ),
             tags=self.tags,
         )

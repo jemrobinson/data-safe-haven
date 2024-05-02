@@ -8,6 +8,7 @@ from pulumi_azure_native import containerinstance, network, resources, storage
 from data_safe_haven.infrastructure.common import (
     SREIpRanges,
     get_id_from_subnet,
+    get_ip_address_from_container_group,
 )
 from data_safe_haven.infrastructure.components import (
     FileShareFile,
@@ -23,6 +24,8 @@ class SRETrafficFilterProps:
     def __init__(
         self,
         location: Input[str],
+        route_table_name: Input[str],
+        route_table_resource_group_name: Input[str],
         sre_index: Input[int],
         storage_account_key: Input[str],
         storage_account_name: Input[str],
@@ -31,6 +34,8 @@ class SRETrafficFilterProps:
     ) -> None:
         subnet_ranges = Output.from_input(sre_index).apply(lambda idx: SREIpRanges(idx))
         self.location = location
+        self.route_table_name = route_table_name
+        self.route_table_resource_group_name = route_table_resource_group_name
         self.storage_account_key = storage_account_key
         self.storage_account_name = storage_account_name
         self.storage_account_resource_group_name = storage_account_resource_group_name
@@ -75,7 +80,9 @@ class SRETrafficFilterComponent(ComponentResource):
         )
 
         # Overwrite Squid config file
-        squid_conf_reader = FileReader(resources_path / "traffic_filter" / "squid.mustache.conf")
+        squid_conf_reader = FileReader(
+            resources_path / "traffic_filter" / "squid.mustache.conf"
+        )
         FileShareFile(
             f"{self._name}_file_share_squid_conf",
             FileShareFileProps(
@@ -111,7 +118,7 @@ class SRETrafficFilterComponent(ComponentResource):
         )
 
         # Define a container group with Squid
-        containerinstance.ContainerGroup(
+        container_group = containerinstance.ContainerGroup(
             f"{self._name}_container_group_traffic_filter",
             container_group_name=f"{stack_name}-container-group-traffic-filter",
             containers=[
@@ -172,4 +179,17 @@ class SRETrafficFilterComponent(ComponentResource):
                 ),
             ),
             tags=child_tags,
+        )
+
+        # Define a route via the traffic filter
+        network.Route(
+            f"{self._name}_route",
+            address_prefix="0.0.0.0/0",
+            # name="ViaTrafficFilter_name",
+            next_hop_ip_address=get_ip_address_from_container_group(container_group),
+            next_hop_type=network.RouteNextHopType.VIRTUAL_APPLIANCE,
+            resource_group_name=props.route_table_resource_group_name,
+            route_name="ViaTrafficFilter",
+            route_table_name=props.route_table_name,
+            opts=child_opts,
         )
