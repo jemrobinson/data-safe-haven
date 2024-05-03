@@ -67,9 +67,19 @@ class SRETrafficFilterComponent(ComponentResource):
             tags=child_tags,
         )
 
-        # Define configuration file share
-        file_share = storage.FileShare(
-            f"{self._name}_file_share",
+        # Define configuration file shares
+        file_share_caddy = storage.FileShare(
+            f"{self._name}_file_share_caddy",
+            access_tier="TransactionOptimized",
+            account_name=props.storage_account_name,
+            resource_group_name=props.storage_account_resource_group_name,
+            share_name="traffic-filter-caddy",
+            share_quota=1,
+            signed_identifiers=[],
+            opts=child_opts,
+        )
+        file_share_squid = storage.FileShare(
+            f"{self._name}_file_share_squid",
             access_tier="TransactionOptimized",
             account_name=props.storage_account_name,
             resource_group_name=props.storage_account_resource_group_name,
@@ -79,9 +89,27 @@ class SRETrafficFilterComponent(ComponentResource):
             opts=child_opts,
         )
 
+        # Upload caddy file
+        caddy_caddyfile_reader = FileReader(
+            resources_path / "traffic_filter" / "caddy" / "Caddyfile"
+        )
+        FileShareFile(
+            f"{self._name}_file_share_caddy_caddyfile",
+            FileShareFileProps(
+                destination_path=caddy_caddyfile_reader.name,
+                share_name=file_share_caddy.name,
+                file_contents=Output.secret(caddy_caddyfile_reader.file_contents()),
+                storage_account_key=props.storage_account_key,
+                storage_account_name=props.storage_account_name,
+            ),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=file_share_caddy)
+            ),
+        )
+
         # Overwrite Squid config file
         squid_conf_reader = FileReader(
-            resources_path / "traffic_filter" / "squid.mustache.conf"
+            resources_path / "traffic_filter" / "squid" / "squid.mustache.conf"
         )
         FileShareFile(
             f"{self._name}_file_share_squid_conf",
@@ -94,27 +122,31 @@ class SRETrafficFilterComponent(ComponentResource):
                         mustache_values
                     )
                 ),
-                share_name=file_share.name,
+                share_name=file_share_squid.name,
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
             ),
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=file_share)),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=file_share_squid)
+            ),
         )
 
         # Upload Squid allowlists
         sre_all_allowlist_reader = FileReader(
-            resources_path / "traffic_filter" / "sre_all.allowlist"
+            resources_path / "traffic_filter" / "squid" / "sre_all.allowlist"
         )
         FileShareFile(
             f"{self._name}_file_share_sre_all_allowlist",
             FileShareFileProps(
                 destination_path=sre_all_allowlist_reader.name,
                 file_contents=sre_all_allowlist_reader.file_contents(),
-                share_name=file_share.name,
+                share_name=file_share_squid.name,
                 storage_account_key=props.storage_account_key,
                 storage_account_name=props.storage_account_name,
             ),
-            opts=ResourceOptions.merge(child_opts, ResourceOptions(parent=file_share)),
+            opts=ResourceOptions.merge(
+                child_opts, ResourceOptions(parent=file_share_squid)
+            ),
         )
 
         # Define a container group with Squid
@@ -123,24 +155,51 @@ class SRETrafficFilterComponent(ComponentResource):
             container_group_name=f"{stack_name}-container-group-traffic-filter",
             containers=[
                 containerinstance.ContainerArgs(
+                    image="caddy:2.7.6",
+                    name="caddy"[:63],
+                    ports=[
+                        containerinstance.ContainerPortArgs(
+                            port=80,
+                            protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
+                        ),
+                        containerinstance.ContainerPortArgs(
+                            port=443,
+                            protocol=containerinstance.ContainerGroupNetworkProtocol.TCP,
+                        ),
+                    ],
+                    resources=containerinstance.ResourceRequirementsArgs(
+                        requests=containerinstance.ResourceRequestsArgs(
+                            cpu=0.5,
+                            memory_in_gb=0.5,
+                        ),
+                    ),
+                    volume_mounts=[
+                        containerinstance.VolumeMountArgs(
+                            mount_path="/etc/caddy",
+                            name="caddy-etc-caddy",
+                            read_only=True,
+                        ),
+                    ],
+                ),
+                containerinstance.ContainerArgs(
                     image="ubuntu/squid:6.1-23.10_beta",
                     name="squid"[:63],
                     ports=[
                         containerinstance.ContainerPortArgs(
-                            port=80,
+                            port=8080,
                             protocol=containerinstance.ContainerNetworkProtocol.TCP,
                         )
                     ],
                     resources=containerinstance.ResourceRequirementsArgs(
                         requests=containerinstance.ResourceRequestsArgs(
-                            cpu=1,
-                            memory_in_gb=1,
+                            cpu=0.5,
+                            memory_in_gb=0.5,
                         ),
                     ),
                     volume_mounts=[
                         containerinstance.VolumeMountArgs(
                             mount_path="/etc/squid/",
-                            name="squid-etc-squid-custom",
+                            name="squid-etc-squid",
                             read_only=True,
                         ),
                     ],
@@ -165,11 +224,19 @@ class SRETrafficFilterComponent(ComponentResource):
             volumes=[
                 containerinstance.VolumeArgs(
                     azure_file=containerinstance.AzureFileVolumeArgs(
-                        share_name=file_share.name,
+                        share_name=file_share_caddy.name,
                         storage_account_key=props.storage_account_key,
                         storage_account_name=props.storage_account_name,
                     ),
-                    name="squid-etc-squid-custom",
+                    name="caddy-etc-caddy",
+                ),
+                containerinstance.VolumeArgs(
+                    azure_file=containerinstance.AzureFileVolumeArgs(
+                        share_name=file_share_squid.name,
+                        storage_account_key=props.storage_account_key,
+                        storage_account_name=props.storage_account_name,
+                    ),
+                    name="squid-etc-squid",
                 ),
             ],
             opts=ResourceOptions.merge(

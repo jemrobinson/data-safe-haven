@@ -169,6 +169,7 @@ class SRENetworkingComponent(ComponentResource):
             props.subnet_user_services_software_repositories_iprange.apply(str)
         )
         subnet_workspaces_prefix = props.subnet_workspaces_iprange.apply(str)
+        vnet_prefix = props.vnet_iprange.apply(str)
 
         # Define NSGs
         nsg_application_gateway = network.NetworkSecurityGroup(
@@ -860,6 +861,18 @@ class SRENetworkingComponent(ComponentResource):
             resource_group_name=resource_group.name,
             security_rules=[
                 # Inbound
+                network.SecurityRuleArgs(
+                    access=network.SecurityRuleAccess.ALLOW,
+                    description="Allow HTTP(S) inbound traffic from the SRE.",
+                    destination_address_prefix=subnet_traffic_filter_prefix,
+                    destination_port_ranges=[Ports.HTTP, Ports.HTTPS],
+                    direction=network.SecurityRuleDirection.INBOUND,
+                    name="AllowSREInbound",
+                    priority=NetworkingPriorities.INTERNAL_SRE_ANY,
+                    protocol=network.SecurityRuleProtocol.ASTERISK,
+                    source_address_prefix=vnet_prefix,
+                    source_port_range="*",
+                ),
                 network.SecurityRuleArgs(
                     access=network.SecurityRuleAccess.DENY,
                     description="Deny all other inbound traffic.",
