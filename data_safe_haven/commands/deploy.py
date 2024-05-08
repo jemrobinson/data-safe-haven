@@ -187,11 +187,11 @@ def sre(
             replace=True,
         )
 
-        # # Deploy Azure infrastructure with Pulumi
-        # if force is None:
-        #     stack.deploy()
-        # else:
-        #     stack.deploy(force=force)
+        # Deploy Azure infrastructure with Pulumi
+        if force is None:
+            stack.deploy()
+        else:
+            stack.deploy(force=force)
 
         # # Provision SRE with anything that could not be done in Pulumi
         # manager = SREProvisioningManager(
