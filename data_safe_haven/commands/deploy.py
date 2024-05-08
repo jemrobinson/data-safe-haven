@@ -187,22 +187,22 @@ def sre(
             replace=True,
         )
 
-        # Deploy Azure infrastructure with Pulumi
-        if force is None:
-            stack.deploy()
-        else:
-            stack.deploy(force=force)
+        # # Deploy Azure infrastructure with Pulumi
+        # if force is None:
+        #     stack.deploy()
+        # else:
+        #     stack.deploy(force=force)
 
-        # Provision SRE with anything that could not be done in Pulumi
-        manager = SREProvisioningManager(
-            graph_api_token=graph_api.token,
-            location=context.location,
-            sre_name=sre_name,
-            sre_stack=stack,
-            subscription_name=context.subscription_name,
-            timezone=config.shm.timezone,
-        )
-        manager.run()
+        # # Provision SRE with anything that could not be done in Pulumi
+        # manager = SREProvisioningManager(
+        #     graph_api_token=graph_api.token,
+        #     location=context.location,
+        #     sre_name=sre_name,
+        #     sre_stack=stack,
+        #     subscription_name=context.subscription_name,
+        #     timezone=config.shm.timezone,
+        # )
+        # manager.run()
     except DataSafeHavenError as exc:
         msg = f"Could not deploy Secure Research Environment {sre_name}.\n{exc}"
         raise DataSafeHavenError(msg) from exc

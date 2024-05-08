@@ -12,8 +12,8 @@ from data_safe_haven.external import GraphApi
 from .dsh_resource_provider import DshResourceProvider
 
 
-class AzureADApplicationProps:
-    """Props for the AzureADApplication class"""
+class EntraIDApplicationProps:
+    """Props for the EntraIDApplication class"""
 
     def __init__(
         self,
@@ -34,7 +34,7 @@ class AzureADApplicationProps:
         self.web_redirect_url = web_redirect_url
 
 
-class AzureADApplicationProvider(DshResourceProvider):
+class EntraIDApplicationProvider(DshResourceProvider):
     @staticmethod
     def refresh(props: dict[str, Any]) -> dict[str, Any]:
         try:
@@ -65,7 +65,7 @@ class AzureADApplicationProvider(DshResourceProvider):
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
     def create(self, props: dict[str, Any]) -> CreateResult:
-        """Create new AzureAD application."""
+        """Create new Entra ID application."""
         outs = dict(**props)
         try:
             graph_api = GraphApi(auth_token=props["auth_token"], disable_logging=True)
@@ -115,7 +115,7 @@ class AzureADApplicationProvider(DshResourceProvider):
             msg = f"Failed to create application [green]{props['application_name']}[/] in AzureAD.\n{exc}"
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
         return CreateResult(
-            f"AzureADApplication-{props['application_name']}",
+            f"EntraIDApplication-{props['application_name']}",
             outs=outs,
         )
 
@@ -162,20 +162,20 @@ class AzureADApplicationProvider(DshResourceProvider):
             raise DataSafeHavenMicrosoftGraphError(msg) from exc
 
 
-class AzureADApplication(Resource):
+class EntraIDApplication(Resource):
     application_id: Output[str]
     application_secret: Output[str]
     object_id: Output[str]
-    _resource_type_name = "dsh:common:AzureADApplication"  # set resource type
+    _resource_type_name = "dsh:common:EntraIDApplication"  # set resource type
 
     def __init__(
         self,
         name: str,
-        props: AzureADApplicationProps,
+        props: EntraIDApplicationProps,
         opts: ResourceOptions | None = None,
     ):
         super().__init__(
-            AzureADApplicationProvider(),
+            EntraIDApplicationProvider(),
             name,
             {
                 "application_id": None,
