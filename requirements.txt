@@ -190,7 +190,7 @@ pycparser==2.22
     # via cffi
 pydantic==2.8.2
     # via data-safe-haven (pyproject.toml)
-pydantic-core==2.20.1
+pydantic-core==2.23.0
     # via pydantic
 pygments==2.18.0
     # via rich
