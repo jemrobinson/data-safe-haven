@@ -4,7 +4,7 @@
 #
 #    pip-compile --constraint=requirements-constraints.txt --output-file=requirements.txt pyproject.toml
 #
-acme==2.10.0
+acme==2.11.0
     # via simple-acme-dns
 annotated-types==0.7.0
     # via pydantic
