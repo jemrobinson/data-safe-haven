@@ -264,7 +264,7 @@ urllib3==2.2.2
     # via
     #   -c requirements-constraints.txt
     #   requests
-validators==0.28.3
+validators==0.33.0
     # via simple-acme-dns
 websocket-client==1.8.0
     # via data-safe-haven (pyproject.toml)
