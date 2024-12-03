@@ -45,7 +45,7 @@ dependencies = [
   "cryptography==44.0.0",
   "fqdn==1.5.1",
   "psycopg[binary]==3.1.19", # needed for installation on older MacOS versions
-  "pulumi-azure-native==2.74.0",
+  "pulumi-azure-native==2.75.0",
   "pulumi-azuread==6.0.1",
   "pulumi-random==4.16.7",
   "pulumi==3.142.0",
