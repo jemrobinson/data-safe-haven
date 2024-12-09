@@ -45,17 +45,17 @@ dependencies = [
   "cryptography==44.0.0",
   "fqdn==1.5.1",
   "psycopg[binary]==3.1.19", # needed for installation on older MacOS versions
-  "pulumi-azure-native==2.74.0",
+  "pulumi-azure-native==2.76.0",
   "pulumi-azuread==6.0.1",
   "pulumi-random==4.16.7",
   "pulumi==3.142.0",
-  "pydantic==2.10.2",
+  "pydantic==2.10.3",
   "pyjwt[crypto]==2.10.1",
   "pytz==2024.2",
   "pyyaml==6.0.2",
   "rich==13.9.4",
   "simple-acme-dns==3.2.0",
-  "typer==0.14.0",
+  "typer==0.15.1",
   "websocket-client==1.8.0",
 ]
 
@@ -74,12 +74,12 @@ docs = [
 ]
 lint = [
   "ansible-dev-tools==24.11.0",
-  "ansible==11.0.0",
+  "ansible==11.1.0",
   "black==24.10.0",
   "mypy==1.13.0",
   "pandas-stubs==2.2.3.241126",
-  "pydantic==2.10.2",
-  "ruff==0.8.1",
+  "pydantic==2.10.3",
+  "ruff==0.8.2",
   "types-appdirs==1.4.3.5",
   "types-chevron==0.14.2.20240310",
   "types-pytz==2024.2.0.20241003",
@@ -87,7 +87,7 @@ lint = [
   "types-requests==2.32.0.20241016",
 ]
 test = [
-  "coverage==7.6.8",
+  "coverage==7.6.9",
   "freezegun==1.5.1",
   "pytest-mock==3.14.0",
   "pytest==8.3.4",
